@@ -99,7 +99,7 @@ namespace Nez.ImGuiTools.TypeInspectors
 		{
 			var value = Convert.ToInt32(GetValue());
 			if (InspectAnyInt(ref value))
-				SetValue(Convert.ToByte(value % 256));
+				SetValue(Convert.ToByte(value));
 		}
 
 		void InspectInt32()
