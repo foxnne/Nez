@@ -14,20 +14,21 @@ namespace Nez.ImGuiTools.TypeInspectors
 	{
 		public static Type[] KSupportedTypes =
 		{
-			typeof(bool), typeof(Color), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
+			typeof(byte), typeof(bool), typeof(Color), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
 			typeof(string), typeof(Vector2), typeof(Vector3)
 		};
 
 		RangeAttribute _rangeAttribute;
 		Action _inspectMethodAction;
 		bool _isUnsignedInt;
+		bool _isByte;
 
 		public override void Initialize()
 		{
 			base.Initialize();
 			_rangeAttribute = _memberInfo.GetCustomAttribute<RangeAttribute>();
 
-			// the inspect method name matters! We use reflection to feth it.
+			// the inspect method name matters! We use reflection to fetch it.
 			var valueTypeName = _valueType.Name.ToString();
 			var inspectorMethodName = "Inspect" + valueTypeName[0].ToString().ToUpper() + valueTypeName.Substring(1);
 			var inspectMethodInfo = ReflectionUtils.GetMethodInfo(this, inspectorMethodName);
@@ -39,6 +40,17 @@ namespace Nez.ImGuiTools.TypeInspectors
 				_rangeAttribute = new RangeAttribute(0);
 			else if (_isUnsignedInt && _rangeAttribute != null && _rangeAttribute.MinValue < 0)
 				_rangeAttribute.MinValue = 0;
+
+			// handle byte ranges to prevent overflow
+			_isByte = _valueType == typeof(byte);
+			if (_isByte && _rangeAttribute == null)
+				_rangeAttribute = new RangeAttribute(byte.MinValue,byte.MaxValue);
+			else if (_isByte && _rangeAttribute != null)
+			{
+				_rangeAttribute.MinValue = _rangeAttribute.MinValue < 0 ? 0 : _rangeAttribute.MinValue;
+				_rangeAttribute.MaxValue = _rangeAttribute.MaxValue > byte.MaxValue ? byte.MaxValue : _rangeAttribute.MaxValue;
+			}
+
 		}
 
 		public override void DrawMutable()
@@ -81,6 +93,13 @@ namespace Nez.ImGuiTools.TypeInspectors
 			{
 				return ImGui.InputInt(_name, ref value);
 			}
+		}
+
+		void InspectByte()
+		{
+			var value = Convert.ToInt32(GetValue());
+			if (InspectAnyInt(ref value))
+				SetValue(Convert.ToByte(value % 256));
 		}
 
 		void InspectInt32()

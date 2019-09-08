@@ -122,6 +122,8 @@ namespace Nez
 		protected static Inspector GetInspectorForType(Type valueType, object target, MemberInfo memberInfo)
 		{
 			// built-in types
+			if (valueType == typeof(byte))
+				return new ByteInspector();
 			if (valueType == typeof(int))
 				return new IntInspector();
 			if (valueType == typeof(float))
