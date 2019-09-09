@@ -27,7 +27,7 @@ namespace Nez
 	}
 
 
-	public enum Direction
+	public enum InputDirection
 	{
 		Up,
 		Down,

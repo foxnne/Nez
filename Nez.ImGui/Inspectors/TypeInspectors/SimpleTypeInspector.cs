@@ -15,7 +15,7 @@ namespace Nez.ImGuiTools.TypeInspectors
 		public static Type[] KSupportedTypes =
 		{
 			typeof(byte), typeof(bool), typeof(Color), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float),
-			typeof(string), typeof(Vector2), typeof(Vector3)
+			typeof(string), typeof(Vector2), typeof(Vector3), typeof(Direction)
 		};
 
 		RangeAttribute _rangeAttribute;
@@ -100,6 +100,17 @@ namespace Nez.ImGuiTools.TypeInspectors
 			var value = Convert.ToInt32(GetValue());
 			if (InspectAnyInt(ref value))
 				SetValue(Convert.ToByte(value));
+		}
+
+		void InspectDirection()
+		{
+			int value = Convert.ToInt32(GetValue<Direction>());
+			var directions = new string[]
+			{
+				"S", "SE", "E", "NE", "N", "NW", "W", "SW"
+			};
+			if (ImGui.Combo("Direction", ref value, directions, 8))
+				SetValue((Direction)value);
 		}
 
 		void InspectInt32()

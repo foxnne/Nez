@@ -226,20 +226,20 @@ namespace Nez
 		/// <returns>The game pad DP ad.</returns>
 		/// <param name="gamepadIndex">Gamepad index.</param>
 		/// <param name="direction">Direction.</param>
-		public VirtualButton AddGamePadDPad(int gamepadIndex, Direction direction)
+		public VirtualButton AddGamePadDPad(int gamepadIndex, InputDirection direction)
 		{
 			switch (direction)
 			{
-				case Direction.Up:
+				case InputDirection.Up:
 					Nodes.Add(new GamePadDPadUp(gamepadIndex));
 					break;
-				case Direction.Down:
+				case InputDirection.Down:
 					Nodes.Add(new GamePadDPadDown(gamepadIndex));
 					break;
-				case Direction.Left:
+				case InputDirection.Left:
 					Nodes.Add(new GamePadDPadLeft(gamepadIndex));
 					break;
-				case Direction.Right:
+				case InputDirection.Right:
 					Nodes.Add(new GamePadDPadRight(gamepadIndex));
 					break;
 			}

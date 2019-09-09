@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 namespace Nez
 {
-	public static class Mathf
+	public static partial class Mathf
 	{
 		public const float Epsilon = 0.00001f;
 		public const float Deg2Rad = 0.0174532924f;
@@ -867,5 +867,78 @@ namespace Nez
 		}
 
 		#endregion
+		
+		///<summary> Returns the Bearing from south (0,-1) to the vector created between (x,y) and (z,w). </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(float x, float y, float z, float w)
+        {
+            if (x == 0 && y == 0 && z == 0 && w == 0) { return 0; }
+
+            return Wrap(((Mathf.Atan2(w - y, z - x) * Mathf.Rad2Deg) + 90), 360);
+        }
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector created between a and b. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(Vector2 a, Vector2 b) { return Bear(a.X, a.Y, b.X, b.Y); }
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector created between a and b. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(Vector3 a, Vector3 b) { return Bear(a.X, a.Y, b.X, b.Y); }
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector (x,y). </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(float x, float y) { return Bear(0, 0, x, y); }
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector (x,y). </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(int x, int y) { return Bear(0, 0, x, y); }
+
+        ///<summary> Returns the Bearing from south (0,-1) and v. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(Vector3 v) { return Bear(0, 0, v.X, v.Y); }
+
+        ///<summary> Returns the Bearing from south (0,-1) and v. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(Vector2 v) { return Bear(0, 0, v.X, v.Y); }
+
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector whose index is i. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(byte b) { return Wrap(b, 8) * 45; }
+
+        ///<summary> Returns the Bearing from south (0,-1) to the vector whose index is i. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Bear(int i) { return Wrap(i, 8) * 45; }
+
+
+        ///<summary> Returns a repeating integer wrapping from 0 to exclusive x.
+        ///<para> Result becomes mirrored across zero when i becomes negative. </para> 
+        ///<para> <code> i.e: repeat(-1, 8); //result == 7; </code></para></summary>
+        ///<param name="i"> Current value. </param>
+        ///<param name="m"> Exclusive maximum value. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Wrap(int i, int m) { return i >= 0 ? i % m : i % m + m; }
+
+        ///<summary> Returns a repeating float wrapping from *0* to exclusive *x*.
+        ///<para> Result becomes mirrored across zero when i becomes negative. </para> 
+        ///<para> <code> i.e: repeat(-1, 8); //result == 7; </code></para></summary>
+        ///<param name="f"> Current value. </param>
+        ///<param name="m"> Exclusive maximum value. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Wrap(float f, float m) { return f >= 0 ? f % m : f % m + m; }
+
+
+        ///<summary> Steps s times between zero and  and returns closest step to f.
+        ///<para> Resulting sign is equal to sign of (t * f). </para> </summary>
+        ///<param name="f"> Current value. </param>
+        ///<param name="s"> Number of steps. </param>
+        ///<param name="m"> Maximum value. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Step(float f, int s, float m)
+        {
+            float x = m / s;
+            return (int)Mathf.RoundToInt(((f + x / 2) % m) / x);
+        }
+
 	}
 }
