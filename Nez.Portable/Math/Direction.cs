@@ -76,9 +76,9 @@ namespace Nez
             {
                 switch (Value)
                 {
-                    case 0: case 1: case 7: return -1;
                     case 2: case 6: return 0;
-                    case 3: case 4: case 5: return 1;
+                    case 3: case 4: case 5: return -1;
+                    case 0: case 1: case 7: return 1;
                     default: return 0;
                 }
             }
@@ -89,56 +89,56 @@ namespace Nez
         public static Direction S
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 0; }
+            get { return (byte)0; }
         }
 
         /// <summary>Creates a Direction facing southeast.</summary>
         public static Direction SE
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 1; }
+            get { return (byte)1; }
         }
 
         /// <summary>Creates a Direction facing east.</summary>
         public static Direction E
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 2; }
+            get { return (byte)2; }
         }
 
         /// <summary>Creates a Direction facing northeast.</summary>
         public static Direction NE
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 3; }
+            get { return (byte)3; }
         }
 
         /// <summary>Creates a Direction facing north.</summary>
         public static Direction N
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 4; }
+            get { return (byte)4; }
         }
 
         /// <summary>Creates a Direction facing northwest.</summary>
         public static Direction NW
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 5; }
+            get { return (byte)5; }
         }
 
         /// <summary>Creates a Direction facing west.</summary>
         public static Direction W
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 6; }
+            get { return (byte)6; }
         }
 
         /// <summary>Creates a Direction facing southwest.</summary>
         public static Direction SW
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return 7; }
+            get { return (byte)7; }
         }
 
 
@@ -229,11 +229,11 @@ namespace Nez
 
         /// <summary>Returns the result of an equality operation on a wrapped rounded float and Direction.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(float lhs, Direction rhs) { return (int)Mathf.RoundToInt(lhs) % 8 == rhs.Value; }
+        public static bool operator ==(float lhs, Direction rhs) { return Mathf.RoundToInt(lhs) % 8 == rhs.Value; }
 
         /// <summary>Returns the result of an equality operation on a wrapped rounded float and Direction.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Direction lhs, float rhs) { return lhs.Value == (int)Mathf.RoundToInt(rhs) % 8; }
+        public static bool operator ==(Direction lhs, float rhs) { return lhs.Value == Mathf.RoundToInt(rhs) % 8; }
 
 
         /// <summary>Returns the result of an equality operation on the closest Direction to Vector2 and Direction.</summary>
@@ -280,11 +280,11 @@ namespace Nez
 
         /// <summary>Returns the result of an inequality operation.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(float lhs, Direction rhs) { return (int)Mathf.RoundToInt(lhs) % 8 != rhs.Value; }
+        public static bool operator !=(float lhs, Direction rhs) { return Mathf.RoundToInt(lhs) % 8 != rhs.Value; }
 
         /// <summary>Returns the result of an inequality operation.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Direction lhs, float rhs) { return lhs.Value != (int)Mathf.RoundToInt(rhs) % 8; }
+        public static bool operator !=(Direction lhs, float rhs) { return lhs.Value != Mathf.RoundToInt(rhs) % 8; }
 
 
         /// <summary>Returns the result of an inequality operation.</summary>

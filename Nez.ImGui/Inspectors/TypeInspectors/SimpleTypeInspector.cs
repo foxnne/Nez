@@ -104,7 +104,7 @@ namespace Nez.ImGuiTools.TypeInspectors
 
 		void InspectDirection()
 		{
-			int value = Convert.ToInt32(GetValue<Direction>());
+			int value = GetValue<Direction>();
 			var directions = new string[]
 			{
 				"S", "SE", "E", "NE", "N", "NW", "W", "SW"
