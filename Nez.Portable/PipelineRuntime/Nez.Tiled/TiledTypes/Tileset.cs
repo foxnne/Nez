@@ -47,8 +47,10 @@ namespace Nez.Tiled
 				{
 					var xDocTileset = XDocument.Load(stream);
 
-					var tileset = new TmxTileset(map, xDocTileset.Element("tileset"), firstGid, tmxDir);
-					tileset.TmxDirectory = Path.GetDirectoryName(source);
+					var tileset = new TmxTileset(map, xDocTileset.Element("tileset"), firstGid, tmxDir)
+					{
+						TmxDirectory = Path.GetDirectoryName(source)
+					};
 
 					return tileset;
 				}
@@ -185,6 +187,35 @@ namespace Nez.Tiled
 		float _animationElapsedTime;
 		int _animationCurrentFrame;
 
+		/// <summary>
+		/// returns the value of an "nez:isDestructable" property if present in the properties dictionary
+		/// </summary>
+		/// <value><c>true</c> if is destructable; otherwise, <c>false</c>.</value>
+		public bool IsDestructable;
+
+		/// <summary>
+		/// returns the value of a "nez:isSlope" property if present in the properties dictionary
+		/// </summary>
+		/// <value>The is slope.</value>
+		public bool IsSlope;
+
+		/// <summary>
+		/// returns the value of a "nez:isOneWayPlatform" property if present in the properties dictionary
+		/// </summary>
+		public bool IsOneWayPlatform;
+
+		/// <summary>
+		/// returns the value of a "nez:slopeTopLeft" property if present in the properties dictionary
+		/// </summary>
+		/// <value>The slope top left.</value>
+		public int SlopeTopLeft;
+
+		/// <summary>
+		/// returns the value of a "nez:slopeTopRight" property if present in the properties dictionary
+		/// </summary>
+		/// <value>The slope top right.</value>
+		public int SlopeTopRight;
+
 
 		public TmxTilesetTile(TmxTileset tileset, XElement xTile, TmxList<TmxTerrain> Terrains, string tmxDir = "")
 		{
@@ -227,6 +258,28 @@ namespace Nez.Tiled
 			}
 
 			Properties = PropertyDict.ParsePropertyDict(xTile.Element("properties"));
+
+			if (Properties != null)
+				ProcessProperties();
+		}
+
+		void ProcessProperties()
+		{
+			string value;
+			if (Properties.TryGetValue("nez:isDestructable", out value))
+				IsDestructable = bool.Parse(value);
+
+			if (Properties.TryGetValue("nez:isSlope", out value))
+				IsSlope = bool.Parse(value);
+
+			if (Properties.TryGetValue("nez:isOneWayPlatform", out value))
+				IsOneWayPlatform = bool.Parse(value);
+
+			if (Properties.TryGetValue("nez:slopeTopLeft", out value))
+				SlopeTopLeft = int.Parse(value);
+
+			if (Properties.TryGetValue("nez:slopeTopRight", out value))
+				SlopeTopRight = int.Parse(value);
 		}
 
 		public void UpdateAnimatedTiles()
@@ -242,7 +295,6 @@ namespace Nez.Tiled
 				_animationElapsedTime = 0;
 			}
 		}
-
 	}
 
 
