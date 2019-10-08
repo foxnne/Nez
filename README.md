@@ -70,8 +70,12 @@ If you intend to use any of the built in Effects or PostProcessors you should al
 
 Note: if you get compile errors referencing a missing `project.assets.json` file run `msbuild Nez.sln /t:restore` in the root Nez folder to restore them.
 
+If you are using a .NET Core main application and want to switch the Nez projects over to .NET Standard 2.0, run the following command in a terminal. On Windows it will require the linux subsystem terminal: `find . -path Tests -prune -o -name 'Nez*.csproj' | grep -v Tests | grep -v Pipeline | xargs perl -pi -e 's/net471/netstandard2.0/g'`
+
 
 ### Install through NuGet:
+
+Note that using the NuGet packages isn't recommended. The source code has been carefully commented and contains a wealth of useful information. Use the NuGet packages to give Nez a test and if you like it consider switching to using the source code.
 
 Add [Nez](https://www.nuget.org/packages/Nez/) to your project's NuGet packages. Optionally add the Nez.FarseerPhysics and Nez.Persistence NuGet packages.
 
@@ -87,7 +91,7 @@ If you are developing a mobile application you will need to enable touch input b
 
 Samples Repository
 ==========
-You can find the samples repo [here](https://github.com/prime31/Nez-Samples). It contains a variety of sample scenes that demonstrate the basics of getting stuff done with Nez. [The wiki](https://github.com/prime31/Nez/wiki) also contains a few short examples. [This YouTube playlist](https://www.youtube.com/playlist?list=PLb8LPjN5zpx0ZerxdoVarLKlWJ1_-YD9M) also has a few relevant videos.
+You can find the samples repo [here](https://github.com/prime31/Nez-Samples). It contains a variety of sample scenes that demonstrate the basics of getting stuff done with Nez. [This YouTube playlist](https://www.youtube.com/playlist?list=PLb8LPjN5zpx0ZerxdoVarLKlWJ1_-YD9M) also has a few relevant videos.
 
 
 
