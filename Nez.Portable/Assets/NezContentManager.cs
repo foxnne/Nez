@@ -131,7 +131,7 @@ namespace Nez.Systems
 		/// <summary>
 		/// Loads a SpriteAtlas created with the Sprite Atlas Packer tool
 		/// </summary>
-		public SpriteAtlas LoadSpriteAtlas(string name)
+		public SpriteAtlas LoadSpriteAtlas(string name, bool premultiplyAlpha = false)
 		{
 			if (LoadedAssets.TryGetValue(name, out var asset))
 			{
@@ -139,7 +139,7 @@ namespace Nez.Systems
 					return spriteAtlas;
 			}
 
-			var atlas = SpriteAtlasLoader.ParseSpriteAtlas(name);
+			var atlas = SpriteAtlasLoader.ParseSpriteAtlas(name, premultiplyAlpha);
 
 			LoadedAssets.Add(name, atlas);
 			DisposableAssets.Add(atlas);
@@ -417,13 +417,13 @@ namespace Nez.Systems
 		{
 			if (assetName.StartsWith("nez://"))
 			{
-				var assembly = ReflectionUtils.GetAssembly(GetType());
+				var assembly = GetType().Assembly;
 
 #if FNA
 				// for FNA, we will just search for the file by name since the assembly name will not be known at runtime
-				foreach( var item in assembly.GetManifestResourceNames() )
+				foreach (var item in assembly.GetManifestResourceNames())
 				{
-					if( item.EndsWith( assetName.Substring( assetName.Length - 20 ) ) )
+					if (item.EndsWith(assetName.Substring(assetName.Length - 20)))
 					{
 						assetName = "nez://" + item;
 						break;
