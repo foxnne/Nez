@@ -14,6 +14,8 @@ namespace Nez
 
 		internal static byte[] SpriteAlphaTestBytes => GetFileResourceBytes("Content/nez/effects/SpriteAlphaTest.mgfxo");
 
+		internal static byte[] SpritePaletteEffectBytes => GetFileResourceBytes("Content/nez/effects/SpritePaletteEffect.fxb");
+
 		internal static byte[] CrosshatchBytes => GetFileResourceBytes("Content/nez/effects/Crosshatch.mgfxo");
 
 		internal static byte[] NoiseBytes => GetFileResourceBytes("Content/nez/effects/Noise.mgfxo");
