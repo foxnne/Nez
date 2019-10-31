@@ -26,29 +26,19 @@ float Max3 (float3 input)
 
 float2 PaletteCoords (float3 base, float3 input)
 {
-	//offset the green and blue channels from red such that 
-	//green overwrites red, and blue overwrites green, regardless of value
-	//multiply by non-zero values of input to allow passthrough
-	float3 _baseOffsets = float3
+	//build a ordered list of the currently used channels
+	//apply input color such that zero values are bypassed
+	//offset green and blue channels so they overwrite each other
+	float3 _activeChannels = float3
 	( 
-		base.r * ceil(input.r), 
-		base.g * ceil(input.g) * 2, 
-		base.b * ceil(input.b) * 3
+		saturate(base.r * input.r * 65025), 
+		saturate(base.g * input.g * 65025) * 2, 
+		saturate(base.b * input.b * 65025) * 3
 	);
 
-	//select the channel of the greatest value
-	float _maxOffset = Max3(_baseOffsets);
-	float3 _baseSelect = float3
-	(
-		step(_maxOffset, _baseOffsets.r),
-		step(_maxOffset, _baseOffsets.g),
-		step(_maxOffset, _baseOffsets.b)
-	);
-
-	//at this point there is only one non-zero value
-	//multiply input by selection and get the max
-	//use 123 to avoid zeroing out the red channel
-	float _index = Max3(_baseSelect * float3(1,2,3)) - 1;
+	//the max value is now the index of the channel we need
+	//remove 1 to account for 1-based indexing above
+	float _index = Max3(_activeChannels) - 1;
 
 	float _x = base[_index];
 	float _y = input[_index];
