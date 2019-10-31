@@ -60,9 +60,9 @@ namespace Nez
             {
                 switch (Value)
                 {
-                    case 0: case 4: return 0;
-                    case 1: case 2: case 3: return 1;
-                    case 5: case 6: case 7: return -1;
+                    case S: case N: return 0;
+                    case SE: case E: case NE: return 1;
+                    case SW: case W: case NW: return -1;
                     default: return 0;
                 }
             }
@@ -76,71 +76,39 @@ namespace Nez
             {
                 switch (Value)
                 {
-                    case 2: case 6: return 0;
-                    case 3: case 4: case 5: return -1;
-                    case 0: case 1: case 7: return 1;
+                    case E: case W: return 0;
+                    case NE: case N: case NW: return -1;
+                    case SE: case S: case SW: return 1;
                     default: return 0;
                 }
             }
         }
 
 
-        /// <summary>Creates a Direction facing south.</summary>
-        public static Direction S
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)0; }
-        }
+        /// <summary>Value of Direction facing south. </summary>
+        public const byte S = 0;
 
-        /// <summary>Creates a Direction facing southeast.</summary>
-        public static Direction SE
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)1; }
-        }
+        /// <summary>Value of Direction facing southeast. </summary>
+        public const byte SE = 1;
 
-        /// <summary>Creates a Direction facing east.</summary>
-        public static Direction E
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)2; }
-        }
+        /// <summary>Value of Direction facing east. </summary>
+        public const byte E = 2;
 
-        /// <summary>Creates a Direction facing northeast.</summary>
-        public static Direction NE
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)3; }
-        }
+        /// <summary>Value of Direction facing northeast. </summary>
+        public const byte NE = 3;
 
-        /// <summary>Creates a Direction facing north.</summary>
-        public static Direction N
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)4; }
-        }
+        /// <summary>Value of Direction facing north. </summary>
+        public const byte N = 4;
 
-        /// <summary>Creates a Direction facing northwest.</summary>
-        public static Direction NW
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)5; }
-        }
+        /// <summary>Value of Direction facing northwest. </summary>
+        public const byte NW = 5;
 
-        /// <summary>Creates a Direction facing west.</summary>
-        public static Direction W
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)6; }
-        }
+        /// <summary>Value of Direction facing west. </summary>
+        public const byte W = 6;
 
-        /// <summary>Creates a Direction facing southwest.</summary>
-        public static Direction SW
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return (byte)7; }
-        }
-
+        /// <summary>Value of Direction facing southwest. </summary>
+        public const byte SW = 7;
+       
 
         /// <summary>Implicitly converts a Direction to a byte.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
