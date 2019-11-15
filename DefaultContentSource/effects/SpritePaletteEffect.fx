@@ -2,7 +2,7 @@ sampler s0; // from SpriteBatch
 
 texture _paletteTexture;
 
-sampler2D _paletteTextureSampler = sampler_state
+sampler _paletteSampler = sampler_state
 {
 	Texture = <_paletteTexture>;
     AddressU = Clamp;
@@ -24,7 +24,7 @@ float Max3 (float3 input)
 	return max(input.b, max(input.g, input.r));
 }
 
-float2 PaletteCoords (float3 base, float3 input)
+float2 PaletteCoords (float4 base, float4 input)
 {
 	//build a ordered list of the currently used channels
 	//apply input color such that zero values are bypassed
@@ -40,19 +40,15 @@ float2 PaletteCoords (float3 base, float3 input)
 	//remove 1 to account for 1-based indexing above
 	float _index = Max3(_activeChannels) - 1;
 
-	float _x = base[_index];
-	float _y = input[_index];
-
-	return float2(_x,_y);
+	return float2(base[_index], input[_index]);
 }
 
 float4 MainPS( VertexShaderOutput input ) : COLOR
 {
-	float4 _baseColor = tex2D( s0, input.TextureCoordinates );
-	
-    return tex2D(_paletteTextureSampler, PaletteCoords(_baseColor.rgb, input.Color.rgb)) * (input.Color.a * _baseColor.a);
-}
+	float4 _base = tex2D( s0, input.TextureCoordinates );
 
+	return tex2D(_paletteSampler, PaletteCoords(_base, input.Color)) * _base.a * input.Color.a;
+}
 
 technique SpriteDrawing
 {
