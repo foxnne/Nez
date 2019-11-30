@@ -12,6 +12,8 @@ using Nez.Sprites;
 using Nez.Textures;
 using Nez.Tiled;
 using Microsoft.Xna.Framework.Audio;
+using Nez.BitmapFonts;
+
 
 namespace Nez.Systems
 {
@@ -23,6 +25,7 @@ namespace Nez.Systems
 		Dictionary<string, Effect> _loadedEffects = new Dictionary<string, Effect>();
 
 		List<IDisposable> _disposableAssets;
+
 		List<IDisposable> DisposableAssets
 		{
 			get
@@ -32,6 +35,7 @@ namespace Nez.Systems
 					var fieldInfo = ReflectionUtils.GetFieldInfo(typeof(ContentManager), "disposableAssets");
 					_disposableAssets = fieldInfo.GetValue(this) as List<IDisposable>;
 				}
+
 				return _disposableAssets;
 			}
 		}
@@ -110,6 +114,7 @@ namespace Nez.Systems
 					return sfx;
 				}
 			}
+
 			using (var stream = Path.IsPathRooted(name) ? File.OpenRead(name) : TitleContainer.OpenStream(name))
 			{
 				var sfx = SoundEffect.FromStream(stream);
@@ -177,6 +182,25 @@ namespace Nez.Systems
 		}
 
 		
+
+		/// <summary>
+		/// Loads a BitmapFont
+		/// </summary>
+		public BitmapFont LoadBitmapFont(string name)
+		{
+			if (LoadedAssets.TryGetValue(name, out var asset))
+			{
+				if (asset is BitmapFont bmFont)
+					return bmFont;
+			}
+
+			var font = BitmapFontLoader.LoadFontFromFile(name);
+
+			LoadedAssets.Add(name, font);
+			DisposableAssets.Add(font);
+
+			return font;
+		}
 
 		/// <summary>
 		/// loads an ogl effect directly from file and handles disposing of it when the ContentManager is disposed. Name should be the path
@@ -413,6 +437,7 @@ namespace Nez.Systems
 						return kv.Key;
 				}
 			}
+
 			return null;
 		}
 

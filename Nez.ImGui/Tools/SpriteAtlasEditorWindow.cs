@@ -49,7 +49,7 @@ namespace Nez.ImGuiTools
 		float _imageZoom = 1;
 		Num.Vector2 _imagePosition;
 
-		AtlasData _spriteAtlasData = new AtlasData();
+		AtlasData _atlasData = new AtlasData();
 		string[] _originEnumNames;
 		string _stringBuffer = "";
 		StartEndInt _startEndInt;
@@ -125,7 +125,7 @@ namespace Nez.ImGuiTools
 			if (_texturePtr != IntPtr.Zero)
 				Core.GetGlobalManager<ImGuiManager>().UnbindTexture(_texturePtr);
 
-			_spriteAtlasData.Clear();
+			_atlasData.Clear();
 			_nonEditableAnimations.Clear();
 			_atlasAllowsAnimationEditing = true;
 			_hasSlicedContent = false;
@@ -139,13 +139,13 @@ namespace Nez.ImGuiTools
 			if (File.Exists(_sourceAtlasFile))
 			{
 				_hasSlicedContent = true;
-				_spriteAtlasData = AtlasLoader.ParseAtlasData(_sourceAtlasFile, true);
+				_atlasData = AtlasLoader.ParseAtlasData(_sourceAtlasFile, true);
 
 				// ensure animations are contiguous, since that is all we support.
 				// First check that all frames are in order in the animations
-				for (var j = 0; j < _spriteAtlasData.AnimationFrames.Count; j++)
+				for (var j = 0; j < _atlasData.AnimationFrames.Count; j++)
 				{
-					var animation = _spriteAtlasData.AnimationFrames[j];
+					var animation = _atlasData.AnimationFrames[j];
 					for (var i = 0; i < animation.Count; i++)
 					{
 						if (i == 0)
@@ -163,11 +163,11 @@ namespace Nez.ImGuiTools
 				// always increase or stay the same. Not perfect by any means, but we dont know if this is padded in some
 				// odd way or contains sprites of odd sizes so this is a quick and dirty solution.
 				var lastRectY = -1;
-				for (var i = 0; i < _spriteAtlasData.SourceRects.Count; i++)
+				for (var i = 0; i < _atlasData.SourceRects.Count; i++)
 				{
-					if (i == 0 || lastRectY <= _spriteAtlasData.SourceRects[i].Y)
+					if (i == 0 || lastRectY <= _atlasData.SourceRects[i].Y)
 					{
-						lastRectY = _spriteAtlasData.SourceRects[i].Y;
+						lastRectY = _atlasData.SourceRects[i].Y;
 						continue;
 					}
 
@@ -257,28 +257,28 @@ namespace Nez.ImGuiTools
 				ImGui.Combo("###global-origin", ref _globalOriginEnumValue, _originEnumNames, _originEnumNames.Length);
 				if (ImGui.Button("Set All Origins"))
 				{
-					for (var i = 0; i < _spriteAtlasData.Origins.Count; i++)
-						_spriteAtlasData.Origins[i] = OriginValue((Origin)_globalOriginEnumValue, _spriteAtlasData.Origins[i]);
+					for (var i = 0; i < _atlasData.Origins.Count; i++)
+						_atlasData.Origins[i] = OriginValue((Origin)_globalOriginEnumValue, _atlasData.Origins[i]);
 					ImGui.CloseCurrentPopup();
 				}
 				ImGui.EndPopup();
 			}
 
-			for (var i = 0; i < _spriteAtlasData.Origins.Count; i++)
+			for (var i = 0; i < _atlasData.Origins.Count; i++)
 			{
 				ImGui.PushID(i);
-				var name = _spriteAtlasData.Names[i];
+				var name = _atlasData.Names[i];
 				if (ImGui.InputText("Name", ref name, 25))
-					_spriteAtlasData.Names[i] = name;
+					_atlasData.Names[i] = name;
 
-				var origin = _spriteAtlasData.Origins[i].ToNumerics();
+				var origin = _atlasData.Origins[i].ToNumerics();
 				if (ImGui.SliderFloat2("Origin", ref origin, 0f, 1f))
-					_spriteAtlasData.Origins[i] = origin.ToXNA();
+					_atlasData.Origins[i] = origin.ToXNA();
 
-				var originEnum = OriginIndex(_spriteAtlasData.Origins[i]);
+				var originEnum = OriginIndex(_atlasData.Origins[i]);
 				var originEnumValue = (int)originEnum;
 				if (ImGui.Combo($"###enum_{i}", ref originEnumValue, _originEnumNames, _originEnumNames.Length))
-					_spriteAtlasData.Origins[i] = OriginValue((Origin)originEnumValue, _spriteAtlasData.Origins[i]);
+					_atlasData.Origins[i] = OriginValue((Origin)originEnumValue, _atlasData.Origins[i]);
 
 				ImGui.Separator();
 				ImGui.PopID();
@@ -318,10 +318,10 @@ namespace Nez.ImGuiTools
 			var cursorPosImageTopLeft = ImGui.GetCursorScreenPos();
 			ImGui.Image(_texturePtr, _textureSize * _imageZoom);
 
-			for (var i = 0; i < _spriteAtlasData.SourceRects.Count; i++)
+			for (var i = 0; i < _atlasData.SourceRects.Count; i++)
 			{
-				DrawRect(cursorPosImageTopLeft, _spriteAtlasData.SourceRects[i], i);
-				DrawOrigin(cursorPosImageTopLeft, _spriteAtlasData.Origins[i], _spriteAtlasData.SourceRects[i]);
+				DrawRect(cursorPosImageTopLeft, _atlasData.SourceRects[i], i);
+				DrawOrigin(cursorPosImageTopLeft, _atlasData.Origins[i], _atlasData.SourceRects[i]);
 			}
 
 			// now, we draw over the image any controls
@@ -344,8 +344,8 @@ namespace Nez.ImGuiTools
 					if (ImGui.MenuItem("Load Atlas or PNG"))
 						openFile = true;
 
-					if (ImGui.MenuItem("Save Atlas", _spriteAtlasData.SourceRects.Count > 0))
-						_spriteAtlasData.SaveToFile(_sourceAtlasFile);
+					if (ImGui.MenuItem("Save Atlas", _atlasData.SourceRects.Count > 0))
+						_atlasData.SaveToFile(_sourceAtlasFile);
 					ImGui.EndMenu();
 				}
 				ImGui.EndMenuBar();
@@ -467,23 +467,23 @@ namespace Nez.ImGuiTools
 
 			NezImGui.MediumVerticalSpace();
 
-			for (var i = 0; i < _spriteAtlasData.AnimationNames.Count; i++)
+			for (var i = 0; i < _atlasData.AnimationNames.Count; i++)
 			{
 				var isEditable = !_nonEditableAnimations.Contains(i);
 				ImGui.PushID(i);
 				var didNotDeleteAnimation = true;
-				if (ImGui.CollapsingHeader(_spriteAtlasData.AnimationNames[i] + $"###anim{i}", ref didNotDeleteAnimation))
+				if (ImGui.CollapsingHeader(_atlasData.AnimationNames[i] + $"###anim{i}", ref didNotDeleteAnimation))
 				{
-					var name = _spriteAtlasData.AnimationNames[i];
+					var name = _atlasData.AnimationNames[i];
 					if (ImGui.InputText("Name", ref name, 25))
-						_spriteAtlasData.AnimationNames[i] = name;
+						_atlasData.AnimationNames[i] = name;
 
-					var fps = _spriteAtlasData.AnimationFps[i];
+					var fps = _atlasData.AnimationFps[i];
 					if (ImGui.SliderInt("Frame Rate", ref fps, 0, 24))
-						_spriteAtlasData.AnimationFps[i] = fps;
+						_atlasData.AnimationFps[i] = fps;
 
 
-					var frames = _spriteAtlasData.AnimationFrames[i];
+					var frames = _atlasData.AnimationFrames[i];
 					if (isEditable)
 					{
 						if (frames.Count == 0)
@@ -502,7 +502,7 @@ namespace Nez.ImGuiTools
 						}
 
 						var framesChanged = ImGui.SliderInt("Start Frame", ref _startEndInt.Start, 0, _startEndInt.End);
-						framesChanged |= ImGui.SliderInt("End Frame", ref _startEndInt.End, _startEndInt.Start, _spriteAtlasData.SourceRects.Count - 1);
+						framesChanged |= ImGui.SliderInt("End Frame", ref _startEndInt.End, _startEndInt.Start, _atlasData.SourceRects.Count - 1);
 
 						if (framesChanged)
 						{
@@ -519,7 +519,7 @@ namespace Nez.ImGuiTools
 						var currentElapsed = Time.TotalTime % iterationDuration;
 						var desiredFrame = Mathf.FloorToInt(currentElapsed / secondsPerFrame);
 						
-						var rect = _spriteAtlasData.SourceRects[frames[desiredFrame]];
+						var rect = _atlasData.SourceRects[frames[desiredFrame]];
 						var uv0 = rect.Location.ToNumerics() / _textureSize;
 						var uv1 = rect.GetSize().ToNumerics() / _textureSize;
 
@@ -533,9 +533,9 @@ namespace Nez.ImGuiTools
 
 				if (!didNotDeleteAnimation)
 				{
-					_spriteAtlasData.AnimationNames.RemoveAt(i);
-					_spriteAtlasData.AnimationFrames.RemoveAt(i);
-					_spriteAtlasData.AnimationFps.RemoveAt(i);
+					_atlasData.AnimationNames.RemoveAt(i);
+					_atlasData.AnimationFrames.RemoveAt(i);
+					_atlasData.AnimationFps.RemoveAt(i);
 					break;
 				}
 				ImGui.PopID();
@@ -561,9 +561,9 @@ namespace Nez.ImGuiTools
 				if (ImGui.Button("Create"))
 				{
 					_stringBuffer = _stringBuffer.Length > 0 ? _stringBuffer : Utils.RandomString(8);
-					_spriteAtlasData.AnimationNames.Add(_stringBuffer);
-					_spriteAtlasData.AnimationFps.Add(8);
-					_spriteAtlasData.AnimationFrames.Add(new List<int>());
+					_atlasData.AnimationNames.Add(_stringBuffer);
+					_atlasData.AnimationFps.Add(8);
+					_atlasData.AnimationFrames.Add(new List<int>());
 
 					_stringBuffer = "";
 					ImGui.CloseCurrentPopup();
@@ -637,7 +637,7 @@ namespace Nez.ImGuiTools
 
 		void GenerateRects(int cellWidth, int cellHeight, int totalFrames, int padding, int cellOffset = 0)
 		{
-			_spriteAtlasData.Clear();
+			_atlasData.Clear();
 			_hasSlicedContent = true;
 
 			var cols = _textureSize.X / cellWidth;
@@ -654,12 +654,12 @@ namespace Nez.ImGuiTools
 
 					var padX = padding * x;
 					var padY = padding * y;
-					_spriteAtlasData.SourceRects.Add(new Rectangle(x * cellWidth + padX, y * cellHeight + padY, cellWidth, cellHeight));
-					_spriteAtlasData.Names.Add($"F{i}");
-					_spriteAtlasData.Origins.Add(Vector2Ext.HalfVector());
+					_atlasData.SourceRects.Add(new Rectangle(x * cellWidth + padX, y * cellHeight + padY, cellWidth, cellHeight));
+					_atlasData.Names.Add($"F{i}");
+					_atlasData.Origins.Add(Vector2Ext.HalfVector());
 
 					// once we hit the max number of cells to include bail out. were done.
-					if (_spriteAtlasData.SourceRects.Count == totalFrames)
+					if (_atlasData.SourceRects.Count == totalFrames)
 						return;
 				}
 			}

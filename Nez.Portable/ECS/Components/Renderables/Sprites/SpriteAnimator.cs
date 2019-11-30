@@ -125,15 +125,19 @@ namespace Nez.Sprites
 				return;
 			}
 
-			// figure out what iteration we are on
-			var completedIterations = Mathf.FloorToInt(time / iterationDuration);
-			var currentElapsed = time % iterationDuration;
+			// figure out which frame we are on
+			int i = Mathf.FloorToInt(time / secondsPerFrame);
+			int n = animation.Sprites.Length;
+			if (n > 2 && (_loopMode == LoopMode.PingPong || _loopMode == LoopMode.PingPongOnce))
+			{
+				// create a pingpong frame
+				int maxIndex = n - 1;
+				CurrentFrame = maxIndex - Math.Abs(maxIndex - i % (maxIndex * 2));
+			}
+			else
+				// create a looping frame
+				CurrentFrame = i % n;
 
-			// if we are coming backwards on a PingPong we need to reverse elapsed
-			if ((_loopMode == LoopMode.PingPong || _loopMode == LoopMode.PingPongOnce) && completedIterations % 2 != 0)
-				currentElapsed = iterationDuration - currentElapsed;
-
-			CurrentFrame = Mathf.FloorToInt(currentElapsed / secondsPerFrame);
 			Sprite = animation.Sprites[CurrentFrame];
 		}
 
