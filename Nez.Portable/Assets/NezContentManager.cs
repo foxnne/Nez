@@ -158,23 +158,25 @@ namespace Nez.Systems
 		}
 
 		/// <summary>
-		/// Loads a SpriteAtlas created with the Sprite Atlas Packer tool
+		/// Loads a Atlas created with the Sprite Atlas Packer tool
 		/// </summary>
-		public SpriteAtlas LoadSpriteAtlas(string name, bool premultiplyAlpha = false)
+		public Atlas LoadAtlas(string name, bool premultiplyAlpha = false)
 		{
 			if (LoadedAssets.TryGetValue(name, out var asset))
 			{
-				if (asset is SpriteAtlas spriteAtlas)
-					return spriteAtlas;
+				if (asset is Atlas _atlas)
+					return _atlas;
 			}
 
-			var atlas = SpriteAtlasLoader.ParseSpriteAtlas(name, premultiplyAlpha);
+			var atlas = AtlasLoader.ParseAtlas(name, premultiplyAlpha);
 
 			LoadedAssets.Add(name, atlas);
 			DisposableAssets.Add(atlas);
 
 			return atlas;
 		}
+
+		
 
 		/// <summary>
 		/// loads an ogl effect directly from file and handles disposing of it when the ContentManager is disposed. Name should be the path

@@ -88,10 +88,6 @@ namespace Nez.Tools.Atlases
                                     if (value == "true") { config.IsSquare = true; }
                                     else config.IsSquare = false;
                                     break;
-                                case "recursesubdirectories":
-                                    if (value == "true") { config.RecurseSubdirectories = true; }
-                                    else config.RecurseSubdirectories = false;
-                                    break;
                                 case "originx":
                                     config.OriginX = float.Parse(value);
                                     break;
@@ -117,6 +113,8 @@ namespace Nez.Tools.Atlases
             return config;
         }
 
+        
+
         public static int PackSprites(Config config)
         {
             //original config holds the input paths at minimum
@@ -141,21 +139,6 @@ namespace Nez.Tools.Atlases
 
             if (config.CreateAnimations) error = CreateAnimations(config, images, animations);
             if (error != 0) { return error; }
-
-            // make sure no images have the same name if we're building a map
-           /*  for (int i = 0; i < images.Count; i++)
-            {
-                var str1 = Path.GetFileNameWithoutExtension(images[i]);
-                for (int j = i + 1; j < images.Count; j++)
-                {
-                    var str2 = Path.GetFileNameWithoutExtension(images[j]);
-                    if (str1 == str2)
-                    {
-                        System.Console.WriteLine("Two images have the same name: {0} = {1}", images[i], images[j]);
-                        return (int)FailCode.ImageNameCollision;
-                    }
-                }
-            } */
 
             // generate our output
             var imagePacker = new ImagePacker();
@@ -242,7 +225,7 @@ namespace Nez.Tools.Atlases
                     var animationName = name.Substring(0, name.LastIndexOf('_'));
                     if (animations.TryGetValue(animationName, out var animationNames))
                     {
-                        animationNames.Add(image);
+                        animationNames.Add(animationName);
                     }
                     else
                     {
@@ -253,47 +236,5 @@ namespace Nez.Tools.Atlases
             }
             return 0;
         }
-
-
-        /* static void FindImages(Config arguments, List<string> images, Dictionary<string, List<string>> animations)
-        {
-            foreach (var str in arguments.InputPaths)
-            {
-                if (Directory.Exists(str))
-                {
-                    foreach (var file in Directory.GetFiles(str))
-                    {
-                        if (MiscHelper.IsImageFile(file))
-                            images.Add(file);
-                    }
-
-                    foreach (var dir in Directory.GetDirectories(str))
-                        FindImagesRecursively(dir, images, animations, arguments.CreateAnimations);
-                }
-                else if (MiscHelper.IsImageFile(str))
-                {
-                    images.Add(str);
-                }
-            }
-        }
-
-        static void FindImagesRecursively(string dir, List<string> images, Dictionary<string, List<string>> animations, bool createAnimations)
-        {
-            var animationFrames = new List<string>();
-            foreach (var file in Directory.GetFiles(dir))
-            {
-                if (MiscHelper.IsImageFile(file))
-                {
-                    images.Add(file);
-                    animationFrames.Add(file);
-                }
-            }
-
-            if (createAnimations && animationFrames.Count > 0)
-                animations.Add(Path.GetFileName(dir), animationFrames);
-
-            foreach (var subdir in Directory.GetDirectories(dir))
-                FindImagesRecursively(subdir, images, animations, createAnimations);
-        } */
     }
 }

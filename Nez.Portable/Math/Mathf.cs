@@ -925,20 +925,19 @@ namespace Nez
 
         ///<summary> Returns a repeating integer wrapping from 0 to exclusive x.
         ///<para> Result becomes mirrored across zero when i becomes negative. </para> 
-        ///<para> <code> i.e: repeat(-1, 8); //result == 7; </code></para></summary>
+        ///<code> i.e: repeat(-1, 8); //result == 7; </code></summary>
         ///<param name="i"> Current value. </param>
         ///<param name="m"> Exclusive maximum value. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Wrap(int i, int m) { return i >= 0 ? i % m : i % m + m; }
 
         ///<summary> Returns a repeating float wrapping from *0* to exclusive *x*.
-        ///<para> Result becomes mirrored across zero when i becomes negative. </para> 
-        ///<para> <code> i.e: repeat(-1, 8); //result == 7; </code></para></summary>
+        ///Result becomes mirrored across zero when i becomes negative. </summary>
+        ///<code>  i.e: repeat(-1, 8); //result == 7; </code>
         ///<param name="f"> Current value. </param>
         ///<param name="m"> Exclusive maximum value. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Wrap(float f, float m) { return f >= 0 ? f % m : f % m + m; }
-
 
         ///<summary> Steps s times between zero and m and returns closest step to f.
         ///<para> Resulting sign is equal to sign of (t * f). </para> </summary>

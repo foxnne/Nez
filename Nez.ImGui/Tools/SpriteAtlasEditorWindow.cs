@@ -49,7 +49,7 @@ namespace Nez.ImGuiTools
 		float _imageZoom = 1;
 		Num.Vector2 _imagePosition;
 
-		SpriteAtlasData _spriteAtlasData = new SpriteAtlasData();
+		AtlasData _spriteAtlasData = new AtlasData();
 		string[] _originEnumNames;
 		string _stringBuffer = "";
 		StartEndInt _startEndInt;
@@ -139,7 +139,7 @@ namespace Nez.ImGuiTools
 			if (File.Exists(_sourceAtlasFile))
 			{
 				_hasSlicedContent = true;
-				_spriteAtlasData = SpriteAtlasLoader.ParseSpriteAtlasData(_sourceAtlasFile, true);
+				_spriteAtlasData = AtlasLoader.ParseAtlasData(_sourceAtlasFile, true);
 
 				// ensure animations are contiguous, since that is all we support.
 				// First check that all frames are in order in the animations
