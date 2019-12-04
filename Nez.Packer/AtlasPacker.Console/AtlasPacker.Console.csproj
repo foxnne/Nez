@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  	<PropertyGroup>
+    	<OutputType>Exe</OutputType>
+    	<TargetFramework>net471</TargetFramework>
+    	<RootNamespace>Nez.Tools.Packing</RootNamespace>
+    	<AssemblyName>AtlasPacker</AssemblyName>
+  	</PropertyGroup>
+  
+  	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
+  	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+  	<ItemGroup>
+  		<Compile Include="..\AtlasPacker\*.cs;..\Shared\Packing\*.cs;..\AtlasPacker\Exporters\*.cs;..\Shared\*.cs;" Link="AtlasPacker\%(Filename)%(Extension)" />
+	</ItemGroup>
+	
+</Project>

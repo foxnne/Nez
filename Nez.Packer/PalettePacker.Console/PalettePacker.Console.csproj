@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  	<PropertyGroup>
+    	<OutputType>Exe</OutputType>
+    	<TargetFramework>net471</TargetFramework>
+    	<RootNamespace>Nez.Tools.Packing</RootNamespace>
+    	<AssemblyName>PalettePacker</AssemblyName>
+  	</PropertyGroup>
+  
+  	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
+  	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+  	<ItemGroup>
+  		<Compile Include="..\PalettePacker\*.cs;..\Shared\Packing\*.cs;..\PalettePacker\Exporters\*.cs;..\Shared\Arguments.cs" Link="PalettePacker\%(Filename)%(Extension)" />
+	</ItemGroup>
+	
+</Project>

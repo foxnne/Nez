@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 
 namespace Nez.Sprites
 {
-    //
+    
     public struct AtlasSprite
     {
         public readonly Rectangle Source;
