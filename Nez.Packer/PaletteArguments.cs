@@ -1,6 +1,4 @@
-using Nez.Tools.Packing.Palettes;
-
-namespace Nez.Tools.Packing.Arguments
+namespace Nez.Tools.Packing
 {
     public class PaletteArguments
     {

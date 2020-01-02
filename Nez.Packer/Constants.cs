@@ -1,4 +1,4 @@
-﻿namespace Nez.Tools.Packing.Atlases
+﻿namespace Nez.Tools.Packing
 {
 	public static class Constants
 	{

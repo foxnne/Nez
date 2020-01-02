@@ -4,28 +4,19 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using Nez.Tools.Packing.Arguments;
 
-namespace Nez.Tools.Packing.Atlases
+namespace Nez.Tools.Packing
 {
-    public class AtlasPacker
+    public class PalettePacker
     {
         public class Config
         {
-            public string AtlasOutputFile;
+            public string PaletteOutputFile;
             public string MapOutputFile;
-            public int AtlasMaxWidth = Constants.DefaultMaximumSheetWidth;
-            public int AtlasMaxHeight = Constants.DefaultMaximumSheetHeight;
-            public int Padding = Constants.DefaultImagePadding;
-            public bool IsPowerOfTwo = false;
-            public bool IsSquare = false;
-            public bool RecurseSubdirectories;
-            public float OriginX = Constants.DefaultOrigin;
-            public float OriginY = Constants.DefaultOrigin;
-            public bool CreateAnimations = true;
-            public int FrameRate = Constants.DefaultFrameRate;
+            public int PaletteWidth;
+            public int MaxPaletteHeight;
+            public int TopPadding;
             public string[] InputPaths;
-            public bool OutputLua;
         }
 
         //really ugly quick and dirty config loading :P
@@ -56,45 +47,20 @@ namespace Nez.Tools.Packing.Atlases
 
                             switch (field)
                             {
-                                case "atlasoutputfile":
-                                    config.AtlasOutputFile = value;
+                                case "paletteoutputfile":
+                                    config.PaletteOutputFile = value;
                                     break;
                                 case "mapoutputfile":
                                     config.MapOutputFile = value;
                                     break;
-                                case "atlasmaxwidth":
-                                    config.AtlasMaxWidth = Int32.Parse(value);
+                                case "palettewidth":
+                                    config.PaletteWidth = Int32.Parse(value);
                                     break;
-                                case "atlasmaxheight":
-                                    config.AtlasMaxHeight = Int32.Parse(value);
+                                case "maxpaletteheight":
+                                    config.MaxPaletteHeight = Int32.Parse(value);
                                     break;
-                                case "padding":
-                                    config.Padding = Int32.Parse(value);
-                                    break;
-                                case "ispoweroftwo":
-                                    if (value == "true") { config.IsPowerOfTwo = true; }
-                                    else config.IsPowerOfTwo = false;
-                                    break;
-                                case "issquare":
-                                    if (value == "true") { config.IsSquare = true; }
-                                    else config.IsSquare = false;
-                                    break;
-                                case "originx":
-                                    config.OriginX = float.Parse(value);
-                                    break;
-                                case "originy":
-                                    config.OriginY = float.Parse(value);
-                                    break;
-                                case "createanimations":
-                                    if (value == "true") { config.CreateAnimations = true; }
-                                    else config.CreateAnimations = false;
-                                    break;
-                                case "framerate":
-                                    config.FrameRate = Int32.Parse(value);
-                                    break;
-                                case "outputlua":
-                                    if (value == "true") { config.OutputLua = true; }
-                                    else config.OutputLua = false;
+                                case "toppadding":
+                                    config.TopPadding = Int32.Parse(value);
                                     break;
                             }
                         }
@@ -106,20 +72,17 @@ namespace Nez.Tools.Packing.Atlases
 
 
 
-        public static int PackSprites(Config config)
+        public static int PackPalettes(Config config)
         {
             //original config holds the input paths at minimum
             //search those for an existing .config and replace if exists
             config = LoadConfig(config);
 
             // compile a list of images
-            var animations = new Dictionary<string, List<string>>();
             var images = new List<string>();
 
-            //FindImages(config, images, animations);
             int error = FindImages(config, images);
             if (error != 0) { return error; }
-
 
             // make sure we found some images
             if (images.Count == 0)
@@ -128,14 +91,11 @@ namespace Nez.Tools.Packing.Atlases
                 return (int)FailCode.NoImages;
             }
 
-            if (config.CreateAnimations) error = CreateAnimations(config, images, animations);
-            if (error != 0) { return error; }
-
             // generate our output
             var imagePacker = new ImagePacker();
 
             // pack the image, generating a map only if desired
-            int result = imagePacker.PackImage(images, config.IsPowerOfTwo, config.IsSquare, config.AtlasMaxWidth, config.AtlasMaxHeight, config.Padding, out Bitmap outputImage, out Dictionary<string, Rectangle> outputMap);
+            int result = imagePacker.PackPalette(images, config.PaletteWidth, config.MaxPaletteHeight, config.TopPadding, out Bitmap outputImage, out Dictionary<string, int> outputMap);
             if (result != 0)
             {
                 System.Console.WriteLine("There was an error making the image sheet.");
@@ -143,35 +103,30 @@ namespace Nez.Tools.Packing.Atlases
             }
 
             // try to save using our exporters
-            if (File.Exists(config.AtlasOutputFile))
-                File.Delete(config.AtlasOutputFile);
+            if (File.Exists(config.PaletteOutputFile))
+                File.Delete(config.PaletteOutputFile);
 
-            var imageExtension = Path.GetExtension(config.AtlasOutputFile).Substring(1).ToLower();
+            var imageExtension = Path.GetExtension(config.PaletteOutputFile).Substring(1).ToLower();
             switch (imageExtension)
             {
                 case "png":
-                    outputImage.Save(config.AtlasOutputFile, ImageFormat.Png);
+                    outputImage.Save(config.PaletteOutputFile, ImageFormat.Png);
                     break;
                 case "jpg":
-                    outputImage.Save(config.AtlasOutputFile, ImageFormat.Jpeg);
+                    outputImage.Save(config.PaletteOutputFile, ImageFormat.Jpeg);
                     break;
                 case "bmp":
-                    outputImage.Save(config.AtlasOutputFile, ImageFormat.Bmp);
+                    outputImage.Save(config.PaletteOutputFile, ImageFormat.Bmp);
                     break;
                 default:
                     throw new Exception("Invalid image format for output image");
             }
 
-            if (config.OutputLua)
-                config.MapOutputFile = config.MapOutputFile.Replace(".atlas", ".lua");
-
             if (File.Exists(config.MapOutputFile))
                 File.Delete(config.MapOutputFile);
 
-            if (config.OutputLua)
-                LuaMapExporter.Save(config.MapOutputFile, outputMap, animations, outputImage.Width, outputImage.Height, config);
-            else
-                AtlasMapExporter.Save(config.MapOutputFile, outputMap, animations, config);
+          
+            //PaletteMapExporter.Save(config.MapOutputFile, outputMap, config);
 
             return 0;
         }

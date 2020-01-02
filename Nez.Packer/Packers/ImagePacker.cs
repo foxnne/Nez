@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using Nez.Tools.Packing.Arguments;
 
 namespace Nez.Tools.Packing
 {
@@ -19,6 +18,9 @@ namespace Nez.Tools.Packing
         // some dictionaries to hold the image sizes and destination rectangles
         private readonly Dictionary<string, Size> imageSizes = new Dictionary<string, Size>();
         private readonly Dictionary<string, Rectangle> imagePlacement = new Dictionary<string, Rectangle>();
+
+        private readonly Dictionary<string, Bitmap> imageBitmaps = new Dictionary<string, Bitmap>();
+        
 
         /// <summary>
         /// Packs a collection of images into a single image.
@@ -53,7 +55,7 @@ namespace Nez.Tools.Packing
             outputMap = null;
 
             // make sure our dictionaries are cleared before starting
-            imageSizes.Clear();
+            imageBitmaps.Clear();
             imagePlacement.Clear();
 
             // get the sizes of all the images
@@ -62,15 +64,18 @@ namespace Nez.Tools.Packing
                 var bitmap = Bitmap.FromFile(image) as Bitmap;
                 if (bitmap == null)
                     return (int)FailCode.FailedToLoadImage;
-                imageSizes.Add(image, bitmap.Size);
+                
+                bitmap = bitmap.Clone(Crop(bitmap), bitmap.PixelFormat);
+                imageBitmaps.Add(image, bitmap);
+                //imageSizes.Add(image, bitmap.Size);
             }
 
             // sort our files by file size so we place large sprites first
             files.Sort(
                 (f1, f2) =>
                 {
-                    Size b1 = imageSizes[f1];
-                    Size b2 = imageSizes[f2];
+                    Size b1 = imageBitmaps[f1].Size;
+                    Size b2 = imageBitmaps[f2].Size;
 
                     int c = -b1.Width.CompareTo(b2.Width);
                     if (c != 0)
@@ -99,7 +104,7 @@ namespace Nez.Tools.Packing
             foreach (var k in keys)
             {
                 // get the actual size
-                var s = imageSizes[k];
+                var s = imageBitmaps[k].Size;
 
                 // get the placement rectangle
                 var r = imagePlacement[k];
@@ -120,13 +125,68 @@ namespace Nez.Tools.Packing
             }
 
             // clear our dictionaries just to free up some memory
-            imageSizes.Clear();
+            //imageSizes.Clear();
             imagePlacement.Clear();
+            imageBitmaps.Clear();
 
             return 0;
         }
 
-		/// <summary>
+        public Rectangle Crop(Bitmap bitmap)
+        {
+            if (Image.GetPixelFormatSize(bitmap.PixelFormat) != 32)
+                throw new InvalidOperationException("Crop currently only supports 32 bits per pixel images.");
+
+            var bottom = 0;
+            var left = bitmap.Width; // Set the left crop point to the width so that the logic below will set the left value to the first non crop color pixel it comes across.
+            var right = 0;
+            var top = bitmap.Height; // Set the top crop point to the height so that the logic below will set the top value to the first non crop color pixel it comes across.
+
+            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
+
+            unsafe
+            {
+                var dataPtr = (byte*)bitmapData.Scan0;
+
+                for (var y = 0; y < bitmap.Height; y++)
+                {
+                    for (var x = 0; x < bitmap.Width; x++)
+                    {
+                        var rgbPtr = dataPtr + (x * 4);
+
+                        var a = rgbPtr[3];
+
+                        // If any of the pixel RGBA values don't match and the crop color is not transparent, or if the crop color is transparent and the pixel A value is not transparent
+                        if (a != 0)
+                        {
+                            if (x < left)
+                                left = x;
+
+                            if (x >= right)
+                                right = x + 1;
+
+                            if (y < top)
+                                top = y;
+
+                            if (y >= bottom)
+                                bottom = y + 1;
+                        }
+                    }
+
+                    dataPtr += bitmapData.Stride;
+                }
+            }
+
+            bitmap.UnlockBits(bitmapData);
+
+            if (left < right && top < bottom)
+                return new Rectangle(left, top, right - left, bottom - top);
+
+            return new Rectangle(0, 0, bitmap.Width, bitmap.Height); // Entire image should be cropped, so just return null
+
+        }
+
+        /// <summary>
         /// Packs a collection of palette images into a single image.
         /// </summary>
         /// <param name="imageFiles">The list of file paths of the palettes to be combined.</param>
@@ -164,15 +224,15 @@ namespace Nez.Tools.Packing
                     return (int)FailCode.FailedToLoadImage;
                 if (outputWidth <= 0)
                     outputWidth = bitmap.Width;
-				if (outputWidth > 0 && bitmap.Width != outputWidth)
-					return (int)FailCode.ImageSizeMismatch;
+                if (outputWidth > 0 && bitmap.Width != outputWidth)
+                    return (int)FailCode.ImageSizeMismatch;
                 if (bitmap.Width == width && bitmap.Height == 1)
                     files.Add(image);
             }
 
-			if (files.Count + topPadding > outputHeight)
-				return (int)FailCode.FailedToPackImage;
-            
+            if (files.Count + topPadding > outputHeight)
+                return (int)FailCode.FailedToPackImage;
+
             outputHeight = files.Count + topPadding;
 
             // sort our files by file size so we place large sprites first
@@ -184,13 +244,13 @@ namespace Nez.Tools.Packing
 
             // add image placements
             int currentRow = topPadding;
-			if (currentRow < 0) currentRow = 0;
+            if (currentRow < 0) currentRow = 0;
 
             outputMap = new Dictionary<string, int>();
             foreach (var image in files)
             {
                 imagePlacement.Add(image, new Rectangle(0, currentRow, outputWidth, 1));
-				outputMap.Add(image, currentRow);
+                outputMap.Add(image, currentRow);
                 currentRow++;
             }
 
@@ -206,7 +266,7 @@ namespace Nez.Tools.Packing
             return 0;
         }
 
-       
+
 
         // This method does some trickery type stuff where we perform the TestPackingImages method over and over, 
         // trying to reduce the image size until we have found the smallest possible image we can fit.
@@ -318,7 +378,7 @@ namespace Nez.Tools.Packing
             foreach (var image in files)
             {
                 // get the bitmap for this file
-                Size size = imageSizes[image];
+                Size size = imageBitmaps[image].Size;
 
                 // pack the image
                 Point origin;
@@ -344,7 +404,7 @@ namespace Nez.Tools.Packing
                 foreach (var image in files)
                 {
                     var location = imagePlacement[image];
-                    var bitmap = Bitmap.FromFile(image) as Bitmap;
+                    var bitmap = imageBitmaps[image];
                     if (bitmap == null)
                         return null;
 

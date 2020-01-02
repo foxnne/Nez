@@ -1,23 +1,13 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Nez.Tools.Packing.Arguments
+namespace Nez.Tools.Packing
 {
-    public enum FailCode
-    {
-        FailedParsingArguments = 1,
-        NoImages,
-        ImageNameCollision,
-        FailedToLoadImage,
-        FailedToPackImage,
-        FailedToSaveImage,
-        ImageSizeMismatch
-    }
+
     #region Command Line Argument Parsing
 
     /* Command Line Argument Parser
@@ -155,7 +145,6 @@ namespace Nez.Tools.Packing.Arguments
             get { return this.helpText; }
             set { this.helpText = value; }
         }
-
         private string shortName;
         private string longName;
         private string helpText;
@@ -421,8 +410,9 @@ namespace Nez.Tools.Packing.Arguments
             this.arguments = new ArrayList();
             this.argumentMap = new Hashtable();
 
-            foreach (FieldInfo field in argumentSpecification.GetFields())
+            foreach (FieldInfo field in argumentSpecification.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy))
             {
+
                 if (!field.IsStatic && !field.IsInitOnly && !field.IsLiteral)
                 {
                     ArgumentAttribute attribute = GetAttribute(field);
@@ -472,7 +462,7 @@ namespace Nez.Tools.Packing.Arguments
 
         private static ArgumentAttribute GetAttribute(FieldInfo field)
         {
-            object[] attributes = field.GetCustomAttributes(typeof(ArgumentAttribute), false);
+            object[] attributes = field.GetCustomAttributes(typeof(ArgumentAttribute), true);
             if (attributes.Length == 1)
                 return (ArgumentAttribute)attributes[0];
 
@@ -500,53 +490,24 @@ namespace Nez.Tools.Packing.Arguments
                 {
                     if (argument.Length > 0)
                     {
-                        switch (argument[0])
+                        int endIndex = argument.IndexOfAny(new char[] { ':', '=' }, 1);
+                        string field = argument.Substring(0, endIndex == -1 ? argument.Length - 1 : endIndex);
+                        string value;
+                        if (field.Length + 1 == argument.Length)
                         {
-                            case '-':
-                                int endIndex = argument.IndexOfAny(new char[] { ':', '+', '-' }, 1);
-                                string option = argument.Substring(1, endIndex == -1 ? argument.Length - 1 : endIndex - 1);
-                                string optionArgument;
-                                if (option.Length + 1 == argument.Length)
-                                {
-                                    optionArgument = null;
-                                }
-                                else if (argument.Length > 1 + option.Length && argument[1 + option.Length] == ':')
-                                {
-                                    optionArgument = argument.Substring(option.Length + 2);
-                                }
-                                else
-                                {
-                                    optionArgument = argument.Substring(option.Length + 1);
-                                }
-
-                                Argument arg = (Argument)this.argumentMap[option];
-                                if (arg == null)
-                                {
-                                    ReportUnrecognizedArgument(argument);
-                                    hadError = true;
-                                }
-                                else
-                                {
-                                    hadError |= !arg.SetValue(optionArgument, destination);
-                                }
-                                break;
-                            case '@':
-                                string[] nestedArguments;
-                                hadError |= LexFileArguments(argument.Substring(1), out nestedArguments);
-                                hadError |= ParseArgumentList(nestedArguments, destination);
-                                break;
-                            default:
-                                if (this.defaultArgument != null)
-                                {
-                                    hadError |= !this.defaultArgument.SetValue(argument, destination);
-                                }
-                                else
-                                {
-                                    ReportUnrecognizedArgument(argument);
-                                    hadError = true;
-                                }
-                                break;
+                            value = null;
                         }
+                        else
+                        {
+                            value = argument.Substring(endIndex + 1);
+                        }
+
+                        Argument arg = (Argument)this.argumentMap[field];
+                        if (arg != null && value != null)
+                        {
+                            hadError |= !arg.SetValue(value, destination);
+                        }
+
                     }
                 }
             }
@@ -721,115 +682,6 @@ namespace Nez.Tools.Packing.Arguments
             get { return this.defaultArgument != null; }
         }
 
-        private bool LexFileArguments(string fileName, out string[] arguments)
-        {
-            string args = null;
-
-            try
-            {
-                using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-                {
-                    args = (new StreamReader(file)).ReadToEnd();
-                }
-            }
-            catch (Exception e)
-            {
-                this.reporter(string.Format("Error: Can't open command line argument file '{0}' : '{1}'", fileName, e.Message));
-                arguments = null;
-                return false;
-            }
-
-            bool hadError = false;
-            ArrayList argArray = new ArrayList();
-            StringBuilder currentArg = new StringBuilder();
-            bool inQuotes = false;
-            int index = 0;
-
-            // while (index < args.Length)
-            try
-            {
-                while (true)
-                {
-                    // skip whitespace
-                    while (char.IsWhiteSpace(args[index]))
-                    {
-                        index += 1;
-                    }
-
-                    // # - comment to end of line
-                    if (args[index] == '#')
-                    {
-                        index += 1;
-                        while (args[index] != '\n')
-                        {
-                            index += 1;
-                        }
-                        continue;
-                    }
-
-                    // do one argument
-                    do
-                    {
-                        if (args[index] == '\\')
-                        {
-                            int cSlashes = 1;
-                            index += 1;
-                            while (index == args.Length && args[index] == '\\')
-                            {
-                                cSlashes += 1;
-                            }
-
-                            if (index == args.Length || args[index] != '"')
-                            {
-                                currentArg.Append('\\', cSlashes);
-                            }
-                            else
-                            {
-                                currentArg.Append('\\', (cSlashes >> 1));
-                                if (0 != (cSlashes & 1))
-                                {
-                                    currentArg.Append('"');
-                                }
-                                else
-                                {
-                                    inQuotes = !inQuotes;
-                                }
-                            }
-                        }
-                        else if (args[index] == '"')
-                        {
-                            inQuotes = !inQuotes;
-                            index += 1;
-                        }
-                        else
-                        {
-                            currentArg.Append(args[index]);
-                            index += 1;
-                        }
-                    } while (!char.IsWhiteSpace(args[index]) || inQuotes);
-                    argArray.Add(currentArg.ToString());
-                    currentArg.Length = 0;
-                }
-            }
-            catch (System.IndexOutOfRangeException)
-            {
-                // got EOF 
-                if (inQuotes)
-                {
-                    this.reporter(string.Format("Error: Unbalanced '\"' in command line argument file '{0}'", fileName));
-                    hadError = true;
-                }
-                else if (currentArg.Length > 0)
-                {
-                    // valid argument can be terminated by EOF
-                    argArray.Add(currentArg.ToString());
-                }
-            }
-
-            arguments = (string[])argArray.ToArray(typeof(string));
-            return hadError;
-        }
-
         private static string LongName(ArgumentAttribute attribute, FieldInfo field)
         {
             return (attribute == null || attribute.DefaultLongName) ? field.Name : attribute.LongName;
@@ -961,7 +813,7 @@ namespace Nez.Tools.Packing.Arguments
                     if (this.IsDefault)
                         reporter(string.Format("Missing required argument '<{0}>'.", this.LongName));
                     else
-                        reporter(string.Format("Missing required argument '/{0}'.", this.LongName));
+                        reporter(string.Format("Missing required argument '{0}'.", this.LongName));
                     return true;
                 }
                 return false;
@@ -1029,12 +881,12 @@ namespace Nez.Tools.Packing.Arguments
                         }
                         else if (type == typeof(bool))
                         {
-                            if (stringData == null || stringData == "+")
+                            if (stringData == null || stringData == "+" || stringData == "true")
                             {
                                 value = true;
                                 return true;
                             }
-                            else if (stringData == "-")
+                            else if (stringData == "-" || stringData == "false")
                             {
                                 value = false;
                                 return true;
@@ -1048,6 +900,11 @@ namespace Nez.Tools.Packing.Arguments
                         else if (type == typeof(uint))
                         {
                             value = int.Parse(stringData);
+                            return true;
+                        }
+                        else if (type == typeof(float))
+                        {
+                            value = float.Parse(stringData);
                             return true;
                         }
                         else
@@ -1194,7 +1051,7 @@ namespace Nez.Tools.Packing.Arguments
                     }
                     else
                     {
-                        builder.Append("/");
+                        //builder.Append("/");
                         builder.Append(this.LongName);
                         Type valueType = this.ValueType;
                         if (valueType == typeof(int))

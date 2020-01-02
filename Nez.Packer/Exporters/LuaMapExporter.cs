@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 
-namespace Nez.Tools.Packing.Atlases
+namespace Nez.Tools.Packing
 {
 	public static class LuaMapExporter
 	{
