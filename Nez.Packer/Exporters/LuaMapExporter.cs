@@ -7,14 +7,14 @@ namespace Nez.Tools.Packing
 {
 	public static class LuaMapExporter
 	{
-		public static void Save(string filename, Dictionary<string, Rectangle> map, Dictionary<string, List<string>> animations, int atlasWidth, int atlasHeight, AtlasPacker.Config arguments)
+		public static void Save(string filename, Dictionary<string, Rectangle> map, Dictionary<string, List<string>> animations, int atlasWidth, int atlasHeight)
 		{
 			var images = ImagesNotInAnimations(map.Keys.ToArray(), animations);
 			using (var writer = new StreamWriter(filename))
 			{
 				writer.WriteLine("return {");
 
-				writer.WriteLine($"\ttexture = love.graphics.newImage('{arguments.AtlasOutputFile}'),");
+				writer.WriteLine($"\ttexture = love.graphics.newImage('{filename}'),");
 
 				if(images.Length > 0)
 				{

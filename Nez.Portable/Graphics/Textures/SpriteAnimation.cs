@@ -1,6 +1,6 @@
 ﻿using Nez.Textures;
 
-namespace Nez.Sprites
+namespace Nez.Textures
 {
 	public class SpriteAnimation
 	{

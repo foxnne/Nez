@@ -1,4 +1,4 @@
-﻿
+﻿<?xml version="1.0"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,9 +6,12 @@
     <RootNamespace>Nez.Tools.Packing</RootNamespace>
     <AssemblyName>Nez.Packer</AssemblyName>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>PrebuiltExecutable</OutputPath>
+    <DebugType>None</DebugType>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -23,7 +26,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
 
-  <!-- <ItemGroup>
-  		<Compile Include="..\Shared\Packing\*.cs;..\Shared\*.cs;" Link="AtlasPacker\%(Filename)%(Extension)" />
-	</ItemGroup> -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Delete Files="$(TargetDir)\\$(AssemblyName).exe.config" />
+  </Target>
+
 </Project>

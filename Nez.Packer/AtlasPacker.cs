@@ -168,9 +168,9 @@ namespace Nez.Tools.Packing
                 File.Delete(config.MapOutputFile);
 
             if (config.OutputLua)
-                LuaMapExporter.Save(config.MapOutputFile, outputMap, animations, outputImage.Width, outputImage.Height, config);
-            else
-                AtlasMapExporter.Save(config.MapOutputFile, outputMap, animations, config);
+                LuaMapExporter.Save(config.MapOutputFile, outputMap, animations, outputImage.Width, outputImage.Height);
+            //else
+                //AtlasMapExporter.Save(config.MapOutputFile, outputMap, ,animations, config.FrameRate);
 
             return 0;
         }
@@ -182,7 +182,7 @@ namespace Nez.Tools.Packing
             {
                 if (Directory.Exists(path))
                 {
-                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(file => MiscHelper.IsImageFile(file)))
+                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(file => ImageHelper.IsImageFile(file)))
                     {
                         var fileName = Path.GetFileNameWithoutExtension(file);
                         if (fileNames.Contains(fileName))

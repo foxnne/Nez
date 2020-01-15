@@ -5,7 +5,7 @@ using System.IO;
 using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nez.Sprites;
+using Nez.Textures;
 using Num = System.Numerics;
 
 namespace Nez.ImGuiTools
@@ -478,9 +478,9 @@ namespace Nez.ImGuiTools
 					if (ImGui.InputText("Name", ref name, 25))
 						_atlasData.AnimationNames[i] = name;
 
-					var fps = _atlasData.AnimationFps[i];
+					var fps = _atlasData.Framerates[i];
 					if (ImGui.SliderInt("Frame Rate", ref fps, 0, 24))
-						_atlasData.AnimationFps[i] = fps;
+						_atlasData.Framerates[i] = fps;
 
 
 					var frames = _atlasData.AnimationFrames[i];
@@ -535,7 +535,7 @@ namespace Nez.ImGuiTools
 				{
 					_atlasData.AnimationNames.RemoveAt(i);
 					_atlasData.AnimationFrames.RemoveAt(i);
-					_atlasData.AnimationFps.RemoveAt(i);
+					_atlasData.Framerates.RemoveAt(i);
 					break;
 				}
 				ImGui.PopID();
@@ -562,7 +562,7 @@ namespace Nez.ImGuiTools
 				{
 					_stringBuffer = _stringBuffer.Length > 0 ? _stringBuffer : Utils.RandomString(8);
 					_atlasData.AnimationNames.Add(_stringBuffer);
-					_atlasData.AnimationFps.Add(8);
+					_atlasData.Framerates.Add(8);
 					_atlasData.AnimationFrames.Add(new List<int>());
 
 					_stringBuffer = "";

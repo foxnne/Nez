@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Nez.Sprites
+namespace Nez.Textures
 {
 	/// <summary>
 	/// temporary class used when loading a SpriteAtlas and by the sprite atlas editor
@@ -16,26 +16,21 @@ namespace Nez.Sprites
 
 		public List<string> AnimationNames = new List<string>();
 		public List<List<int>> AnimationFrames = new List<List<int>>();
-		public List<int> AnimationFps = new List<int>();
+		public List<int> Framerates = new List<int>();
 
 		public Atlas ToAtlas(Texture2D texture)
 		{
-			var sprites = new AtlasSprite[SourceRects.Count];
-			var animations = new AtlasAnimation[AnimationFrames.Count];
-
-			for (var i = 0; i < sprites.Length; i++)
-			{
-				var sprite = new AtlasSprite(SourceRects[i], Origins[i]);
-				sprites[i] = sprite;
-			}
+			var rects = SourceRects.ToArray();
+			var origins = Origins.ToArray();
+			int[][] animations = new int[AnimationFrames.Count][];
+			var framerates = Framerates.ToArray();
 
 			for (var i = 0; i < animations.Length; i++)
 			{
-				AtlasAnimation frames = new AtlasAnimation(AnimationFrames[i].ToArray(), AnimationFps[i]);
-				animations[i] = frames;
+				animations[i] = AnimationFrames[i].ToArray();
 			}
 
-			return new Atlas(texture, sprites, animations);
+			return new Atlas(texture, rects, origins, animations, framerates);
 		}
 
 		public void Clear()
@@ -45,7 +40,7 @@ namespace Nez.Sprites
 			Origins.Clear();
 			AnimationNames.Clear();
 			AnimationFrames.Clear();
-			AnimationFps.Clear();
+			Framerates.Clear();
 		}
 
 		public void SaveToFile(string filename)
@@ -71,7 +66,7 @@ namespace Nez.Sprites
 					for (var i = 0; i < AnimationNames.Count; i++)
 					{
 						writer.WriteLine(AnimationNames[i]);
-						writer.WriteLine("\t{0}", AnimationFps[i]);
+						writer.WriteLine("\t{0}", Framerates[i]);
 						writer.WriteLine("\t{0}", string.Join(",", AnimationFrames[i]));
 					}
 				}

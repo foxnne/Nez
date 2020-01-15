@@ -1,45 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nez.Textures;
 
-namespace Nez.Sprites
+namespace Nez.Textures
 {
-	public class Atlas : IDisposable
+    public class Atlas : IDisposable
     {
-        private Texture2D _texture;
-        public Texture2D Texture
+        private Texture2D _texture2D;
+        public Texture2D Texture2D
         {
-            get { return _texture; }
-            set { _texture = _texture == null || _texture.Congruent(value) ? value : _texture; }
+            get { return _texture2D; }
+            set { _texture2D = _texture2D == null || _texture2D.Congruent(value) ? value : _texture2D; }
         }
 
-        public AtlasSprite[] Sprites { get; private set;}
-        public AtlasAnimation[] Animations { get; private set; }
+        public readonly Rectangle[] SourceRects;
+        public readonly Vector2[] Origins;
 
-        public Atlas(Texture2D texture, AtlasSprite[] sprites, AtlasAnimation[] animations)
+        public readonly int[][] Animations;
+        public readonly int[] Framerates;
+
+        public Atlas(Texture2D texture, Rectangle[] sourceRects, Vector2[] origins, int[][] animations, int[]framerates)
         {
-            _texture = texture;
-            Sprites = sprites;
+            _texture2D = texture;
+            SourceRects = sourceRects;
+            Origins = origins;
             Animations = animations;
-        }
-
-        public Atlas(Texture2D texture, List<AtlasSprite> sprites, List<AtlasAnimation> animations)
-        {
-            _texture = texture;
-            Sprites = sprites.ToArray();
-            Animations = animations.ToArray();
+            Framerates = framerates;
         }
 
         public void Dispose()
         {
-            if (Sprites != null)
-            {
-                _texture.Dispose();
-                Sprites = null;
-                Animations = null;
-            }
+            _texture2D.Dispose();
         }
     }
 }

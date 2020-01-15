@@ -138,7 +138,7 @@ namespace Nez.Tools.Packing
             {
                 if (Directory.Exists(path))
                 {
-                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(file => MiscHelper.IsImageFile(file)))
+                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(file => ImageHelper.IsImageFile(file)))
                     {
                         var fileName = Path.GetFileNameWithoutExtension(file);
                         if (fileNames.Contains(fileName))

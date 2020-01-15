@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nez.Textures;
 
-namespace Nez.Sprites
+namespace Nez.Textures
 {
 	public static class AtlasLoader
 	{
@@ -14,7 +13,7 @@ namespace Nez.Sprites
 		/// </summary>
 		public static Atlas ParseAtlas(string dataFile, bool premultiplyAlpha = false)
 		{
-			var atlasData = ParseAtlasData(dataFile);
+			var atlasData = ParseAtlasData(dataFile, true);
 			using (var stream = TitleContainer.OpenStream(dataFile.Replace(".atlas", ".png")))
 				return atlasData.ToAtlas(premultiplyAlpha ? TextureUtils.TextureFromStreamPreMultiplied(stream) : Texture2D.FromStream(Core.GraphicsDevice, stream));
 		}
@@ -71,7 +70,7 @@ namespace Nez.Sprites
 							// animation fps
 							line = stream.ReadLine();
 							var fps = int.Parse(line);
-							atlas.AnimationFps.Add(fps);
+							atlas.Framerates.Add(fps);
 
 							// animation frames
 							line = stream.ReadLine();

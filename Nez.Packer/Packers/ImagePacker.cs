@@ -183,7 +183,6 @@ namespace Nez.Tools.Packing
                 return new Rectangle(left, top, right - left, bottom - top);
 
             return new Rectangle(0, 0, bitmap.Width, bitmap.Height); // Entire image should be cropped, so just return null
-
         }
 
         /// <summary>
@@ -338,8 +337,8 @@ namespace Nez.Tools.Packing
                 // if we require a power of two texture, find the next power of two that can fit this image
                 if (requirePow2)
                 {
-                    testWidth = MiscHelper.FindNextPowerOfTwo(testWidth);
-                    testHeight = MiscHelper.FindNextPowerOfTwo(testHeight);
+                    testWidth = ImageHelper.FindNextPowerOfTwo(testWidth);
+                    testHeight = ImageHelper.FindNextPowerOfTwo(testHeight);
                 }
 
                 // if we require a square texture, set the width and height to the larger of the two

@@ -1,25 +1,40 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Nez.UI;
 
-namespace Nez.Sprites
+namespace Nez.Textures
 {
-    
+    //Value type so collections dont have to have new initializer?
     public struct AtlasSprite
     {
-        public readonly Rectangle Source;
-        public Vector2 Origin;
+        public int Index { get; set; }
 
-        public AtlasSprite(Rectangle source, Vector2 origin)
+        public SpriteEffects SpriteEffects { get; set; }
+
+        public Color Color { get; set; }
+
+        public bool FlipHorizontally
         {
-            Source = source;
-            Origin = origin;
+            get => (SpriteEffects & SpriteEffects.FlipHorizontally) == SpriteEffects.FlipHorizontally;
+            set => SpriteEffects = value
+                ? (SpriteEffects | SpriteEffects.FlipHorizontally)
+                : (SpriteEffects & ~SpriteEffects.FlipHorizontally);
         }
 
-        public AtlasSprite(Rectangle source)
+        public bool FlipVertically
         {
-            Source = source;
-            Origin = new Vector2(0.5f, 0.5f);
+            get => (SpriteEffects & SpriteEffects.FlipVertically) == SpriteEffects.FlipVertically;
+            set => SpriteEffects = value
+                ? (SpriteEffects | SpriteEffects.FlipVertically)
+                : (SpriteEffects & ~SpriteEffects.FlipVertically);
+        }
+
+        public AtlasSprite(int index)
+        {
+            Index = index;
+            SpriteEffects = SpriteEffects.None;
+            Color = Color.White;
+
         }
     }
-
-
 }
