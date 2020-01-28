@@ -87,6 +87,15 @@ namespace Nez
 			set => _graphicsManager.SupportedOrientations = value;
 		}
 
+#if FNA
+		public static void Maximize ()
+		{
+			SDL2.SDL.SDL_MaximizeWindow(Core.Instance.Window.Handle);
+			SDL2.SDL.SDL_RaiseWindow(Core.Instance.Window.Handle);
+		}
+
+#endif
+
 		public static void ApplyChanges() => _graphicsManager.ApplyChanges();
 
 		/// <summary>

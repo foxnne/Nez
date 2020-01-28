@@ -123,12 +123,12 @@ namespace Nez
 		public readonly RenderableComponentList RenderableComponents;
 
 		/// <summary>
-		/// Stoes and manages all entity processors
+		/// Stores and manages all entity processors
 		/// </summary>
 		public readonly EntityProcessorList EntityProcessors;
 
 		/// <summary>
-		/// gets the size of the sceneRenderTarget
+		/// Gets the size of the sceneRenderTarget
 		/// </summary>
 		/// <value>The size of the scene render texture.</value>
 		public Point SceneRenderTargetSize =>

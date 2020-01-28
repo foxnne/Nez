@@ -18,9 +18,6 @@ namespace Nez.Atlases
             set => SetKey(i, value);
         }
 
-        
-
-
         private void SetKey (int i, int key)
         {
             _keys[i] = key;
@@ -40,7 +37,7 @@ namespace Nez.Atlases
                 {
                     _bounds.CalculateBounds(
                         Entity.Position, LocalOffset, Atlas.Origins[_keys[0]],
-                        Entity.Scale, Entity.Rotation, Atlas.SourceRects[_keys[0]].Width, Atlas.SourceRects[_keys[0]].Height);
+                        Entity.Scale, Entity.Rotation, Atlas.Rectangles[_keys[0]].Width, Atlas.Rectangles[_keys[0]].Height);
                     _areBoundsDirty = false;
                     
                 }
@@ -71,7 +68,7 @@ namespace Nez.Atlases
         {
             for (int i = 0; i < _keys.Length; i++)
             {
-                batcher.Draw(Atlas.Texture2D, Entity.Position + LocalOffset, Atlas.SourceRects[_keys[i]],
+                batcher.Draw(Atlas.Texture2D, Entity.Position + LocalOffset, Atlas.Rectangles[_keys[i]],
                 _colors[i], Entity.Rotation, Atlas.Origins[_keys[i]], Entity.Scale, _spriteEffects[i], LayerDepth);
                 
             }  

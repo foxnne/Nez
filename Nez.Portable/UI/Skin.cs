@@ -261,9 +261,9 @@ namespace Nez.UI
 		/// <param name="atlas">Atlas.</param>
 		public void AddSprites(Atlas atlas)
 		{
-			for (int i = 0, n = atlas.SourceRects.Length; i < n; i++)
+			for (int i = 0, n = atlas.Rectangles.Length; i < n; i++)
 			{
-				var sprite = new Sprite(atlas.Texture2D, atlas.SourceRects[i], atlas.Origins[i]);
+				var sprite = new Sprite(atlas.Texture2D, atlas.Rectangles[i], atlas.Origins[i]);
 				if (sprite is NinePatchSprite)
 					Add(sprite.Texture2D.Name + "_" + i.ToString(), sprite as NinePatchSprite);
 				else
