@@ -69,7 +69,7 @@ namespace Nez
 		/// <summary>
 		/// color passed along to the Batcher when rendering
 		/// </summary>
-		public Color Color = Color.White;
+		public virtual Color Color { get; set; } = Color.White;
 
 		/// <summary>
 		/// used by Renderers to specify how this sprite should be rendered

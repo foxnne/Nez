@@ -9,7 +9,7 @@ namespace Nez.Textures
 	public static class AtlasLoader
 	{
 		/// <summary>
-		/// parses a .atlas file and loads up a SpriteAtlas with it's associated Texture
+		/// parses a .atlas file and loads up a Atlas with it's associated Texture
 		/// </summary>
 		public static Atlas ParseAtlas(string dataFile, bool premultiplyAlpha = false)
 		{
@@ -19,7 +19,7 @@ namespace Nez.Textures
 		}
 
 		/// <summary>
-		/// parses a .atlas file into a temporary SpriteAtlasData class. If leaveOriginsRelative is true, origins will be left as 0 - 1 range instead
+		/// parses a .atlas file into a temporary AtlasData class. If leaveOriginsRelative is true, origins will be left as 0 - 1 range instead
 		/// of multiplying them by the width/height.
 		/// </summary>
 		internal static AtlasData ParseAtlasData(string dataFile, bool leaveOriginsRelative = false)

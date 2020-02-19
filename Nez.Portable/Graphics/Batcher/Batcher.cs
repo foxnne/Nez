@@ -398,6 +398,8 @@ namespace Nez
 			CheckBegin();
 			PushSprite(
 				sprite,
+				sprite.SourceRect,
+				sprite.Uvs,
 				position.X,
 				position.Y,
 				scale,
@@ -455,6 +457,8 @@ namespace Nez
 			CheckBegin();
 			PushSprite(
 				sprite,
+				sprite.SourceRect,
+				sprite.Uvs,
 				position.X,
 				position.Y,
 				scale.X,
@@ -527,6 +531,36 @@ namespace Nez
 				0, 0, 0, 0
 			);
 		}
+
+		public void Draw(
+			Atlas atlas,
+			IRenderableIndex sprite,
+			Vector2 position,
+			float rotation,
+			Vector2 scale,
+			float layerDepth
+		)
+		{
+			CheckBegin();
+			PushSprite
+			(
+				atlas,
+				atlas.Rectangles[sprite.Index],
+				atlas.UVs[sprite.Index],
+				position.X,
+				position.Y,
+				scale.X,
+				scale.Y,
+				sprite.Color,
+				atlas.Origins[sprite.Index],
+				rotation,
+				layerDepth,
+				(byte) (sprite.SpriteEffects & (SpriteEffects) 0x03),
+				0, 0, 0, 0
+			);
+		}
+
+		
 
 		/// <summary>
 		/// direct access to setting vert positions, UVs and colors. The order of elements is top-left, top-right, bottom-left, bottom-right
@@ -743,12 +777,18 @@ namespace Nez
 				skewRightY *= -1;
 			}
 
+			// flip scale negative if we have a flipped sprite
+			if (effects == 1 || effects == 3)
+				destinationW *= -1;
+			if (effects == 2 || effects == 3)
+				destinationH *= -1;
+
 			fixed (VertexPositionColorTexture4* vertexInfo = &_vertexInfo[_numSprites])
 			{
 				// calculate vertices
 				// top-left
-				var cornerX = (_cornerOffsetX[0] - originX) * destinationW + skewTopX;
-				var cornerY = (_cornerOffsetY[0] - originY) * destinationH - skewLeftY;
+				var cornerX = (_cornerOffsetX[0 ^ effects] - originX) * destinationW + skewTopX;
+				var cornerY = (_cornerOffsetY[0 ^ effects] - originY) * destinationH - skewLeftY;
 				vertexInfo->Position0.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -761,12 +801,13 @@ namespace Nez
 				);
 
 				// top-right
-				cornerX = (_cornerOffsetX[1] - originX) * destinationW + skewTopX;
-				cornerY = (_cornerOffsetY[1] - originY) * destinationH - skewRightY;
+				cornerX = (_cornerOffsetX[1 ^ effects] - originX) * destinationW + skewTopX;
+				cornerY = (_cornerOffsetY[1 ^ effects] - originY) * destinationH - skewRightY;
 				vertexInfo->Position1.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
 					destinationX
+
 				);
 				vertexInfo->Position1.Y = (
 					(rotationMatrix2Y * cornerY) +
@@ -775,8 +816,8 @@ namespace Nez
 				);
 
 				// bottom-left
-				cornerX = (_cornerOffsetX[2] - originX) * destinationW + skewBottomX;
-				cornerY = (_cornerOffsetY[2] - originY) * destinationH - skewLeftY;
+				cornerX = (_cornerOffsetX[2 ^ effects] - originX) * destinationW + skewBottomX;
+				cornerY = (_cornerOffsetY[2 ^ effects] - originY) * destinationH - skewLeftY;
 				vertexInfo->Position2.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -789,8 +830,8 @@ namespace Nez
 				);
 
 				// bottom-right
-				cornerX = (_cornerOffsetX[3] - originX) * destinationW + skewBottomX;
-				cornerY = (_cornerOffsetY[3] - originY) * destinationH - skewRightY;
+				cornerX = (_cornerOffsetX[3 ^ effects] - originX) * destinationW + skewBottomX;
+				cornerY = (_cornerOffsetY[3 ^ effects] - originY) * destinationH - skewRightY;
 				vertexInfo->Position3.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -836,20 +877,19 @@ namespace Nez
 		/// Sprite alternative to the old SpriteBatch pushSprite
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		unsafe void PushSprite(Sprite sprite, float destinationX, float destinationY, float destinationW,
-		                float destinationH, Color color, Vector2 origin,
-		                float rotation, float depth, byte effects, float skewTopX, float skewBottomX, float skewLeftY,
-		                float skewRightY)
+		unsafe void PushSprite(Texture2D texture, Rectangle sourceRect, RectangleF uvs, float destinationX, float destinationY,
+		                 float destinationW, float destinationH, Color color, Vector2 origin, float rotation, float depth,
+		                  byte effects, float skewTopX, float skewBottomX, float skewLeftY, float skewRightY)      
 		{
 			// out of space, flush
 			if (_numSprites >= MAX_SPRITES)
 				FlushBatch();
 
 			// Source/Destination/Origin Calculations. destinationW/H is the scale value so we multiply by the size of the texture region
-			var originX = (origin.X / sprite.Uvs.Width) / sprite.Texture2D.Width;
-			var originY = (origin.Y / sprite.Uvs.Height) / sprite.Texture2D.Height;
-			destinationW *= sprite.SourceRect.Width;
-			destinationH *= sprite.SourceRect.Height;
+			var originX = (origin.X / uvs.Width) / texture.Width;
+			var originY = (origin.Y / uvs.Height) / texture.Height;
+			destinationW *= sourceRect.Width;
+			destinationH *= sourceRect.Height;
 
 			// Rotation Calculations
 			float rotationMatrix1X;
@@ -873,7 +913,6 @@ namespace Nez
 				rotationMatrix2Y = 1.0f;
 			}
 
-
 			// flip our skew values if we have a flipped sprite
 			if (effects != 0)
 			{
@@ -883,12 +922,18 @@ namespace Nez
 				skewRightY *= -1;
 			}
 
+			// flip scale negative if we have a flipped sprite
+			if (effects == 1 || effects == 3)
+				destinationW *= -1;
+			if (effects == 2 || effects == 3)
+				destinationH *= -1;
+
 			fixed (VertexPositionColorTexture4* vertexInfo = &_vertexInfo[_numSprites])
 			{
 				// calculate vertices
 				// top-left
-				var cornerX = (_cornerOffsetX[0] - originX) * destinationW + skewTopX;
-				var cornerY = (_cornerOffsetY[0] - originY) * destinationH - skewLeftY;
+				var cornerX = (_cornerOffsetX[0 ^ effects] - originX) * destinationW + skewTopX; 
+				var cornerY = (_cornerOffsetY[0 ^ effects] - originY) * destinationH - skewLeftY;
 				vertexInfo->Position0.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -901,8 +946,8 @@ namespace Nez
 				);
 
 				// top-right
-				cornerX = (_cornerOffsetX[1] - originX) * destinationW + skewTopX;
-				cornerY = (_cornerOffsetY[1] - originY) * destinationH - skewRightY;
+				cornerX = (_cornerOffsetX[1 ^ effects] - originX) * destinationW + skewTopX;
+				cornerY = (_cornerOffsetY[1 ^ effects] - originY) * destinationH - skewRightY;
 				vertexInfo->Position1.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -915,8 +960,8 @@ namespace Nez
 				);
 
 				// bottom-left
-				cornerX = (_cornerOffsetX[2] - originX) * destinationW + skewBottomX;
-				cornerY = (_cornerOffsetY[2] - originY) * destinationH - skewLeftY;
+				cornerX = (_cornerOffsetX[2 ^ effects] - originX) * destinationW + skewBottomX;
+				cornerY = (_cornerOffsetY[2 ^ effects] - originY) * destinationH - skewLeftY;
 				vertexInfo->Position2.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -929,8 +974,8 @@ namespace Nez
 				);
 
 				// bottom-right
-				cornerX = (_cornerOffsetX[3] - originX) * destinationW + skewBottomX;
-				cornerY = (_cornerOffsetY[3] - originY) * destinationH - skewRightY;
+				cornerX = (_cornerOffsetX[3 ^ effects] - originX) * destinationW + skewBottomX;
+				cornerY = (_cornerOffsetY[3 ^ effects] - originY) * destinationH - skewRightY;
 				vertexInfo->Position3.X = (
 					(rotationMatrix2X * cornerY) +
 					(rotationMatrix1X * cornerX) +
@@ -943,21 +988,21 @@ namespace Nez
 				);
 
 				vertexInfo->TextureCoordinate0.X =
-					(_cornerOffsetX[0 ^ effects] * sprite.Uvs.Width) + sprite.Uvs.X;
+					(_cornerOffsetX[0 ^ effects] * uvs.Width) + uvs.X;
 				vertexInfo->TextureCoordinate0.Y =
-					(_cornerOffsetY[0 ^ effects] * sprite.Uvs.Height) + sprite.Uvs.Y;
+					(_cornerOffsetY[0 ^ effects] * uvs.Height) + uvs.Y;
 				vertexInfo->TextureCoordinate1.X =
-					(_cornerOffsetX[1 ^ effects] * sprite.Uvs.Width) + sprite.Uvs.X;
+					(_cornerOffsetX[1 ^ effects] * uvs.Width) + uvs.X;
 				vertexInfo->TextureCoordinate1.Y =
-					(_cornerOffsetY[1 ^ effects] * sprite.Uvs.Height) + sprite.Uvs.Y;
+					(_cornerOffsetY[1 ^ effects] * uvs.Height) + uvs.Y;
 				vertexInfo->TextureCoordinate2.X =
-					(_cornerOffsetX[2 ^ effects] * sprite.Uvs.Width) + sprite.Uvs.X;
+					(_cornerOffsetX[2 ^ effects] * uvs.Width) + uvs.X;
 				vertexInfo->TextureCoordinate2.Y =
-					(_cornerOffsetY[2 ^ effects] * sprite.Uvs.Height) + sprite.Uvs.Y;
+					(_cornerOffsetY[2 ^ effects] * uvs.Height) + uvs.Y;
 				vertexInfo->TextureCoordinate3.X =
-					(_cornerOffsetX[3 ^ effects] * sprite.Uvs.Width) + sprite.Uvs.X;
+					(_cornerOffsetX[3 ^ effects] * uvs.Width) + uvs.X;
 				vertexInfo->TextureCoordinate3.Y =
-					(_cornerOffsetY[3 ^ effects] * sprite.Uvs.Height) + sprite.Uvs.Y;
+					(_cornerOffsetY[3 ^ effects] * uvs.Height) + uvs.Y;
 				vertexInfo->Position0.Z = depth;
 				vertexInfo->Position1.Z = depth;
 				vertexInfo->Position2.Z = depth;
@@ -971,11 +1016,11 @@ namespace Nez
 			if (_disableBatching)
 			{
 				_vertexBuffer.SetData(0, _vertexInfo, 0, 1, VertexPositionColorTexture4.RealStride, SetDataOptions.None);
-				DrawPrimitives(sprite, 0, 1);
+				DrawPrimitives(texture, 0, 1);
 			}
 			else
 			{
-				_textureInfo[_numSprites] = sprite;
+				_textureInfo[_numSprites] = texture;
 				_numSprites += 1;
 			}
 		}

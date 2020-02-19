@@ -188,7 +188,7 @@ namespace Nez.Textures
             UVs[index] = uv;
         }
 
-        public void UpdateRectangles()
+        private void UpdateRectangles()
         {
             for (var i = 0; i < UVs.Length; i++)
             {
@@ -196,7 +196,7 @@ namespace Nez.Textures
             }
         }
 
-        public void UpdateRectangle(int index)
+        private void UpdateRectangle(int index)
         {
             var uv = UVs[index];
             var rect = Rectangles[index];
@@ -237,12 +237,23 @@ namespace Nez.Textures
         }
 
         /// <summary>
-        /// Slices the atlas into rectangles and origins using the current texture.
+        /// Slices the atlas into rectangles, uvs and origins using the current texture.
         /// Origins default to center.
         /// </summary>
         public void Slice(int cellWidth, int cellHeight)
         {
             Slice(cellWidth, cellHeight, new Vector2(0.5f, 0.5f));
+        }
+
+        /// <summary>
+        /// Creates a new atlas from the supplied texture and slices into rectangles, uvs and origins.
+        /// Origins default to the center.
+        /// </summary>
+        public static Atlas Slice (Texture2D texture, int cellWidth, int cellHeight)
+        {
+            var atlas = new Atlas(texture);
+            atlas.Slice(cellWidth, cellHeight);
+            return atlas;
         }
 
         public void Dispose()

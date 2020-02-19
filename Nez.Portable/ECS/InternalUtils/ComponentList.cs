@@ -99,7 +99,7 @@ namespace Nez
 				var component = _components.Buffer[i];
 
 				// deal with renderLayer list if necessary
-				if (component is RenderableComponent)
+				if (component is IRenderable)
 					_entity.Scene.RenderableComponents.Remove(component as RenderableComponent);
 
 				// deal with IUpdatable
@@ -119,7 +119,7 @@ namespace Nez
 			for (var i = 0; i < _components.Length; i++)
 			{
 				var component = _components.Buffer[i];
-				if (component is RenderableComponent)
+				if (component is IRenderable)
 					_entity.Scene.RenderableComponents.Add(component as RenderableComponent);
 
 				if (component is IUpdatable)
@@ -157,7 +157,7 @@ namespace Nez
 				for (int i = 0, count = _componentsToAdd.Count; i < count; i++)
 				{
 					var component = _componentsToAdd[i];
-					if (component is RenderableComponent)
+					if (component is IRenderable)
 						_entity.Scene.RenderableComponents.Add(component as RenderableComponent);
 
 					if (component is IUpdatable)
@@ -201,7 +201,7 @@ namespace Nez
 		void HandleRemove(Component component)
 		{
 			// deal with renderLayer list if necessary
-			if (component is RenderableComponent)
+			if (component is IRenderable)
 				_entity.Scene.RenderableComponents.Remove(component as RenderableComponent);
 
 			// deal with IUpdatable

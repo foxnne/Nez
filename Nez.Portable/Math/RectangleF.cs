@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
-
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Nez
 {
@@ -738,6 +738,21 @@ namespace Nez
 			result.Height = Math.Max(value1.Bottom, value2.Bottom) - result.Y;
 		}
 
+		public static RectangleF Union (params RectangleF[] rectangles)
+		{
+			var result = new RectangleF(float.MaxValue, float.MaxValue, float.MinValue, float.MinValue);
+
+			foreach (var rect in rectangles)
+			{
+				result.X = Math.Min(result.X, rect.X);
+				result.Y = Math.Min(result.Y, rect.Y);
+				result.Width = Math.Max(result.Right, rect.Right) - result.X;
+				result.Height = Math.Max(result.Bottom, rect.Bottom) - result.Y;
+			}
+
+			return result;
+		}
+
 
 		/// <summary>
 		/// Creates a new <see cref="RectangleF"/> where the rectangles overlap.
@@ -769,26 +784,25 @@ namespace Nez
 			result.Height = Math.Max(Math.Min(value1.Bottom, value2.Bottom) - result.Y, 0);
 		}
 
-
-		public void CalculateBounds(Vector2 parentPosition, Vector2 position, Vector2 origin, Vector2 scale,
-		                            float rotation, float width, float height)
+		public void CalculateBounds(float parentPositionX, float parentPositionY, float positionX, float positionY, float originX, float originY, float scaleX,
+		                            float scaleY, float rotation, float width, float height)
 		{
 			if (rotation == 0f)
 			{
-				X = parentPosition.X + position.X - origin.X * scale.X;
-				Y = parentPosition.Y + position.Y - origin.Y * scale.Y;
-				Width = width * scale.X;
-				Height = height * scale.Y;
+				X = parentPositionX + positionX - originX * scaleX;
+				Y = parentPositionY + positionY - originY * scaleY;
+				Width = width * scaleX;
+				Height = height * scaleY;
 			}
 			else
 			{
 				// special care for rotated bounds. we need to find our absolute min/max values and create the bounds from that
-				var worldPosX = parentPosition.X + position.X;
-				var worldPosY = parentPosition.Y + position.Y;
+				var worldPosX = parentPositionX + positionX;
+				var worldPosY = parentPositionY + positionY;
 
 				// set the reference point to world reference taking origin into account
-				Matrix2D.CreateTranslation(-worldPosX - origin.X, -worldPosY - origin.Y, out _transformMat);
-				Matrix2D.CreateScale(scale.X, scale.Y, out _tempMat); // scale ->
+				Matrix2D.CreateTranslation(-worldPosX - originX, -worldPosY - originY, out _transformMat);
+				Matrix2D.CreateScale(scaleX, scaleY, out _tempMat); // scale ->
 				Matrix2D.Multiply(ref _transformMat, ref _tempMat, out _transformMat);
 				Matrix2D.CreateRotation(rotation, out _tempMat); // rotate ->
 				Matrix2D.Multiply(ref _transformMat, ref _tempMat, out _transformMat);
@@ -819,6 +833,21 @@ namespace Nez
 				Height = maxY - minY;
 			}
 		}
+
+		public void CalculateBounds(Vector2 parentPosition, Vector2 position, Vector2 origin, Vector2 scale,
+		                            float rotation, float width, float height) 
+		{
+			CalculateBounds(parentPosition.X, parentPosition.Y, position.X, position.Y, origin.X, origin.Y, 
+								scale.X, scale.Y, rotation, width, height);
+		}
+
+		public void CalculateBounds (Vector2 parentPosition, Vector2 position, Vector2 scale, float rotation,
+									RectangleF aabb)
+		{
+			CalculateBounds(parentPosition.X, parentPosition.Y, position.X, position.Y, aabb.X, aabb.Y,
+							scale.X, scale.Y, rotation, aabb.Width, aabb.Height);		
+		}
+									
 
 
 		/// <summary>

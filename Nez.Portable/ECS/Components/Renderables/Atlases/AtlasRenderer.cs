@@ -1,32 +1,45 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez.Textures;
-
 
 namespace Nez.Atlases
 {
     public class AtlasRenderer : RenderableComponent
     {
-        protected Atlas Atlas { get; private set; }
-
-        [Inspectable]
-        private int[] _keys;
-        [NotInspectable]
-        public int this[int i]
+        public Atlas Atlas
         {
-            get => _keys[i];
-            set => SetKey(i, value);
+            get;
+            set;
         }
 
-        private void SetKey (int i, int key)
+        public int Index
         {
-            _keys[i] = key;
-            _areBoundsDirty = true;
+            get => _renderableIndex.Index;
+            set => _renderableIndex.Index = value;
         }
-    
-        public int Length
+
+        public override Color Color
         {
-            get => _keys.Length;
+            get => _renderableIndex.Color;
+            set => _renderableIndex.Color = value;
+
+        }
+
+        public SpriteEffects SpriteEffects
+        {
+            get => _renderableIndex.SpriteEffects;
+            set => _renderableIndex.SpriteEffects = value;
+        }
+
+        public override float Width
+        {
+            get => Atlas.Rectangles[_renderableIndex.Index].Width;
+        }
+
+        public override float Height
+        {
+            get => Atlas.Rectangles[_renderableIndex.Index].Height;
         }
 
         public override RectangleF Bounds
@@ -35,43 +48,60 @@ namespace Nez.Atlases
             {
                 if (_areBoundsDirty)
                 {
-                    _bounds.CalculateBounds(
-                        Entity.Position, LocalOffset, Atlas.Origins[_keys[0]],
-                        Entity.Scale, Entity.Rotation, Atlas.Rectangles[_keys[0]].Width, Atlas.Rectangles[_keys[0]].Height);
+                    var scale = new Vector2
+                    (
+                        SpriteEffects == SpriteEffects.FlipHorizontally ? Transform.Scale.X * -1 : Transform.Scale.X,
+                        SpriteEffects == SpriteEffects.FlipVertically ? Transform.Scale.Y * -1 : Transform.Scale.Y
+                    );
+
+                    _bounds.CalculateBounds(Transform.Position, LocalOffset, Atlas.Origins[_renderableIndex.Index],
+                                            scale, Transform.Rotation, Width, Height);
+                                            
                     _areBoundsDirty = false;
-                    
                 }
                 return _bounds;
             }
         }
 
-        private Color[] _colors; 
+        private IRenderableIndex _renderableIndex;
 
-        private SpriteEffects[] _spriteEffects;
-
-        public AtlasRenderer (Atlas atlas, params int[] keys)
+        public AtlasRenderer(Atlas atlas, int index)
         {
             Atlas = atlas;
-            var effects = new SpriteEffects[keys.Length];
-            var colors = new Color[keys.Length];
-            for (int i = 0; i < colors.Length; i++)
-            {
-                colors[i] = Color.White;
-            }
+            _renderableIndex = new AtlasSprite(index);
 
-            _keys = keys;
-            _colors = colors;
-            _spriteEffects = effects;
+        }
+
+        public override Component Clone()
+        {
+            return base.Clone();
+        }
+
+        public override void Initialize()
+        {
+            _renderableIndex.IndexChanged += OnIndexChanged;
+        }
+
+        public override void OnRemovedFromEntity()
+        {
+            _renderableIndex.IndexChanged -= OnIndexChanged;
+        }
+
+        public void OnIndexChanged(object sender, EventArgs args)
+        {
+            _areBoundsDirty = true;
+        }
+
+        public void OnSpriteEffectsChanged (object sender, EventArgs args)
+        {
+            _areBoundsDirty = true;
         }
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            for (int i = 0; i < _keys.Length; i++)
-            {
-                batcher.Draw(Atlas.Texture2D, Entity.Position + LocalOffset, Atlas.Rectangles[_keys[i]],
-                _colors[i], Entity.Rotation, Atlas.Origins[_keys[i]], Entity.Scale, _spriteEffects[i], LayerDepth);
-                
-            }  
+            batcher.Draw(Atlas, _renderableIndex, Transform.Position + LocalOffset, Transform.Rotation,
+                        Transform.Scale, LayerDepth);
         }
     }
+
 }
